@@ -143,22 +143,6 @@
       "shipping": "Shipping",
       "returns": "Returns",
       "related": "You may also like"
-    },
-    "centers": {
-      "chip": "Approved centers",
-      "pick_city": "Pick a city",
-      "city_title": ":city centers",
-      "special_tag": "Featured centers — special price",
-      "featured": "Featured",
-      "special_price": "Special install price",
-      "for_customers": "for :store customers",
-      "currency": "SAR",
-      "directions": "Directions in Google Maps",
-      "empty_title": "Approved centers are coming to :city",
-      "empty_text": "Message us on WhatsApp and we'll recommend a trusted install center near you.",
-      "ask_wa": "Ask us on WhatsApp",
-      "wa_message": "Hello, I'm looking for a :store install center in :city",
-      "contact_wa": "WhatsApp us"
     }
   }
 }

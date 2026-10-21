@@ -1,9 +1,7 @@
 /**
- * AZEL — category / listing page (pages/product/index.twig) and the
- * install-centers page (page-single.twig).
+ * AZEL — category / listing page (pages/product/index.twig).
  *   - the filter card as an off-canvas drawer under 960px, with its count
  *   - «عرض N منتج»: the number of cards on screen, kept in step as pages load
- *   - install centers: the city pills
  * Sorting stays with the inherited products.js (#product-filter).
  */
 import { num } from './partials/azel-utils';
@@ -47,35 +45,11 @@ function initPills() {
     if (match) pills.forEach((a) => a.classList.toggle('active', a === match));
 }
 
-/* ================= مراكز التركيب ================= */
-function initCenters() {
-    const root = document.querySelector('[data-centers]');
-    if (!root) return;
-    const bar = root.querySelector('.city-bar');
-    const cities = [...root.querySelectorAll('[data-city]')];
-    const groups = [...root.querySelectorAll('[data-city-group]')];
-    const params = new URLSearchParams(location.search);
-
-    const show = (city) => {
-        cities.forEach((b) => b.classList.toggle('active', b.dataset.city === city));
-        groups.forEach((g) => { g.hidden = g.dataset.cityGroup !== city; });
-    };
-    bar?.addEventListener('click', (e) => {
-        const b = e.target.closest('[data-city]');
-        if (!b) return;
-        show(b.dataset.city);
-        history.replaceState(null, '', `?city=${encodeURIComponent(b.dataset.city)}`);
-    });
-    const wanted = params.get('city');
-    show(cities.some((b) => b.dataset.city === wanted) ? wanted : cities[0]?.dataset.city);
-}
-
 salla.onReady(() => {
     [
         ['filters', initFilters],
         ['count', initCount],
         ['pills', initPills],
-        ['centers', initCenters],
     ].forEach(([name, start]) => {
         try { start(); } catch (error) { salla.logger.error(`azel:: catalog ${name} failed to start`, error); }
     });

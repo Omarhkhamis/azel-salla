@@ -1,4 +1,4 @@
-/* AZEL — the design's pill tabs (home showcase, category page, install centers) */
+/* AZEL — the design's pill tabs (home showcase, category page) */
 .cat-pills{display:flex;gap:8px;flex-wrap:wrap}
 .pill{padding:8px 16px;border-radius:999px;border:1.5px solid var(--line)!important;background:#fff!important;font-size:14px;font-weight:500;transition:.2s}
 .pill:hover{border-color:var(--green-200)!important}
