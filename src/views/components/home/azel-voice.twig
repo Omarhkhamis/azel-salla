@@ -6,12 +6,10 @@
   component.items[] — .name, .city, .product_label / .product_url (a link under
                       the name), .rating (1–5), .audio (a link to an mp3 / m4a)
   The waveform is drawn from the reviewer's name (azel-home.js), so it is the
-  same on every visit. An item without audio is skipped; with none, the whole
-  section stays hidden.
+  same on every visit. An item without audio is skipped; azel-home.js counts
+  the playable ones for the badge and hides the section when there are none.
 #}
-{% set count = 0 %}
-{% for v in component.items %}{% if v.audio|default('')|trim %}{% set count = count + 1 %}{% endif %}{% endfor %}
-{% if count %}
+{% if component.items|length %}
 <section class="section bg-green on-dark voice-section az" data-voice-section>
     <div class="container">
         <div class="section-head">
@@ -20,7 +18,7 @@
                 {% if component.title %}<h2 class="section-title">{{ component.title }}</h2>{% endif %}
                 {% if component.subtitle %}<p class="section-sub">{{ component.subtitle }}</p>{% endif %}
             </div>
-            <span class="voice-count">{% include 'pages.partials.azel.icon' with { i: 'mic', c: 'i-sm' } %} {{ count }} {{ count == 1 ? trans('azel.voice.one') : trans('azel.voice.many') }}</span>
+            <span class="voice-count" data-one="{{ trans('azel.voice.one') }}" data-many="{{ trans('azel.voice.many') }}">{% include 'pages.partials.azel.icon' with { i: 'mic', c: 'i-sm' } %} <b data-voice-count></b></span>
         </div>
         <div class="voice-grid" data-play-label="{{ trans('azel.voice.play') }}" data-pause-label="{{ trans('azel.voice.pause') }}" data-soon-label="{{ trans('azel.voice.soon') }}">
             {% for v in component.items %}

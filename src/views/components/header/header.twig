@@ -117,7 +117,7 @@
                         {% if url %}
                             <a href="{{ url }}"{% if url starts with 'http' and not (url starts with store.url) %} target="_blank" rel="noopener"{% endif %}>{{ label }}</a>
                         {% else %}
-                            <a href="{{ store.url|trim('/', 'right') }}/search?q={{ label|url_encode }}">{{ label }}</a>
+                            <a href="{{ store.url|trim('/', 'right') }}/search?q={{ label }}">{{ label }}</a>
                         {% endif %}
                     {% endif %}
                 {% endfor %}

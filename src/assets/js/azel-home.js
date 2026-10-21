@@ -103,6 +103,11 @@ const fmt = (t) => (!isFinite(t) ? '0:00' : `${Math.floor(t / 60)}:${String(Math
 
 function initVoice(grid) {
     const cards = [...grid.querySelectorAll('[data-voice]')];
+    const section = grid.closest('[data-voice-section]');
+    const badge = section?.querySelector('.voice-count');
+    if (!cards.length) { if (section) section.hidden = true; return; }
+    const count = badge?.querySelector('[data-voice-count]');
+    if (count) count.textContent = `${salla.helpers?.number ? salla.helpers.number(cards.length) : cards.length} ${cards.length === 1 ? badge.dataset.one : badge.dataset.many}`;
     const rtl = document.documentElement.dir !== 'ltr';
     const labels = grid.dataset;
 

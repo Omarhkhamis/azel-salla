@@ -78,7 +78,7 @@ body.lock{overflow:hidden}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--green-50);color:var(--green-700);font-size:13px;font-weight:600;line-height:1.4}
 .chip-lime{background:var(--lime);color:var(--green-900)}
 .chip-dark{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.14)}
-.az .badge,.badge.az-badge{position:absolute;top:14px;inset-inline-start:14px;z-index:2;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;line-height:1.5;
+.az .badge,.badge.az-badge{position:absolute;top:14px;inset-inline-start:14px;z-index:2;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;line-height:1.7;
   background:var(--lime);color:var(--green-900);font-family:var(--font-head);
   /* Raed's .badge is a round counter */
   display:inline-block;height:auto;min-width:0}
@@ -424,7 +424,13 @@ body#app .s-slider-nav-arrow{border-radius:50%}
 .panel{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:clamp(18px,2.5vw,28px)}
 .panel-title{font-size:18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;font-family:var(--font-head)}
 .panel-title .muted{font-size:14px;font-weight:400}
-.azel-cart .cart-item{border:1px solid var(--line);border-radius:var(--r-lg)!important}
+/* the design keeps the title and every row in one white panel (Azel+/cart.html):
+   Raed draws one card per item, so the cards are joined into a single box */
+.azel-cart .main-content > .panel-title{background:#fff;border:1px solid var(--line);border-bottom:0;border-radius:var(--r-lg) var(--r-lg) 0 0;padding:clamp(18px,2.5vw,28px) clamp(18px,2.5vw,28px) 0;margin:0}
+.azel-cart .main-content > form > .cart-item{border:1px solid var(--line);border-top:0;border-bottom:0;border-radius:0!important;margin:0!important;padding:18px clamp(18px,2.5vw,28px)!important}
+.azel-cart .main-content > form + form > .cart-item::before{content:"";position:absolute;top:0;inset-inline:clamp(18px,2.5vw,28px);height:1px;background:var(--line-2)}
+.azel-cart .main-content > form:last-of-type > .cart-item{border-bottom:1px solid var(--line);border-radius:0 0 var(--r-lg) var(--r-lg)!important;margin-bottom:20px!important}
+.azel-cart .cart-item > div{margin-bottom:0}
 .azel-cart .cart-item img{border-radius:14px!important;border-color:var(--line-2)!important;background:var(--green-50)!important;width:96px;height:96px}
 .azel-cart .cart-item h1 a{font-family:var(--font-body);font-weight:600;font-size:15.5px}
 .azel-cart .cart-item .text-primary{color:var(--green-700);font-family:var(--font-head);font-size:15px}

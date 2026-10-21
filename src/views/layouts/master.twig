@@ -54,41 +54,15 @@
    grade pickers. Theme settings, three fixed grades as in the design; the JS
    reads them from data-grades on <html> (escaped JSON, never inline script). #}
 {# Written out per grade, not in a loop: every setting name must appear
-   literally for Salla's editor and review tools. #}
-{% set azel_grades = [] %}
-{% set g_code = theme.settings.get('grade1_code', '00')|trim %}
-{% if g_code %}{% set azel_grades = azel_grades|merge([{
-    id: g_code, label: g_code,
-    name: theme.settings.get('grade1_name', 'خفيف العتمة'),
-    short: theme.settings.get('grade1_short', 'خفيف · مطابق للمرور'),
-    desc: theme.settings.get('grade1_desc', 'تظليل خفيف مع رؤية واضحة وراحة أكبر أثناء القيادة — مطابق لأنظمة المرور'),
-    alpha: theme.settings.get('grade1_shade', 28) / 100,
-    heat: theme.settings.get('grade1_heat', 65),
-    uv: theme.settings.get('grade1_uv', 99),
-    privacy: theme.settings.get('grade1_privacy', 35)
-}]) %}{% endif %}
-{% set g_code = theme.settings.get('grade2_code', '01')|trim %}
-{% if g_code %}{% set azel_grades = azel_grades|merge([{
-    id: g_code, label: g_code,
-    name: theme.settings.get('grade2_name', 'متوسط العتمة'),
-    short: theme.settings.get('grade2_short', 'متوسط العتمة'),
-    desc: theme.settings.get('grade2_desc', 'تظليل متوسط يجمع بين الخصوصية والرؤية المريحة'),
-    alpha: theme.settings.get('grade2_shade', 55) / 100,
-    heat: theme.settings.get('grade2_heat', 76),
-    uv: theme.settings.get('grade2_uv', 99),
-    privacy: theme.settings.get('grade2_privacy', 65)
-}]) %}{% endif %}
-{% set g_code = theme.settings.get('grade3_code', '02')|trim %}
-{% if g_code %}{% set azel_grades = azel_grades|merge([{
-    id: g_code, label: g_code,
-    name: theme.settings.get('grade3_name', 'تعتيم كامل'),
-    short: theme.settings.get('grade3_short', 'تعتيم كامل'),
-    desc: theme.settings.get('grade3_desc', 'تظليل داكن يوفر أعلى مستوى من الخصوصية وتقليل الوهج'),
-    alpha: theme.settings.get('grade3_shade', 82) / 100,
-    heat: theme.settings.get('grade3_heat', 94),
-    uv: theme.settings.get('grade3_uv', 99),
-    privacy: theme.settings.get('grade3_privacy', 100)
-}]) %}{% endif %}
+   literally for Salla's editor and review tools. Built as JSON text with each
+   value through json_encode (no |merge — it is not used by any theme Salla
+   has accepted from us). It lands in a single-quoted attribute, so the
+   autoescaped quotes stay valid; a grade with an empty code is skipped by JS. #}
+{% set azel_grades_json -%}
+[{"id":{{ theme.settings.get('grade1_code', '00')|trim|json_encode }},"name":{{ theme.settings.get('grade1_name', 'خفيف العتمة')|json_encode }},"short":{{ theme.settings.get('grade1_short', 'خفيف · مطابق للمرور')|json_encode }},"desc":{{ theme.settings.get('grade1_desc', 'تظليل خفيف مع رؤية واضحة وراحة أكبر أثناء القيادة — مطابق لأنظمة المرور')|json_encode }},"shade":{{ theme.settings.get('grade1_shade', 28)|json_encode }},"heat":{{ theme.settings.get('grade1_heat', 65)|json_encode }},"uv":{{ theme.settings.get('grade1_uv', 99)|json_encode }},"privacy":{{ theme.settings.get('grade1_privacy', 35)|json_encode }}},
+{"id":{{ theme.settings.get('grade2_code', '01')|trim|json_encode }},"name":{{ theme.settings.get('grade2_name', 'متوسط العتمة')|json_encode }},"short":{{ theme.settings.get('grade2_short', 'متوسط العتمة')|json_encode }},"desc":{{ theme.settings.get('grade2_desc', 'تظليل متوسط يجمع بين الخصوصية والرؤية المريحة')|json_encode }},"shade":{{ theme.settings.get('grade2_shade', 55)|json_encode }},"heat":{{ theme.settings.get('grade2_heat', 76)|json_encode }},"uv":{{ theme.settings.get('grade2_uv', 99)|json_encode }},"privacy":{{ theme.settings.get('grade2_privacy', 65)|json_encode }}},
+{"id":{{ theme.settings.get('grade3_code', '02')|trim|json_encode }},"name":{{ theme.settings.get('grade3_name', 'تعتيم كامل')|json_encode }},"short":{{ theme.settings.get('grade3_short', 'تعتيم كامل')|json_encode }},"desc":{{ theme.settings.get('grade3_desc', 'تظليل داكن يوفر أعلى مستوى من الخصوصية وتقليل الوهج')|json_encode }},"shade":{{ theme.settings.get('grade3_shade', 82)|json_encode }},"heat":{{ theme.settings.get('grade3_heat', 94)|json_encode }},"uv":{{ theme.settings.get('grade3_uv', 99)|json_encode }},"privacy":{{ theme.settings.get('grade3_privacy', 100)|json_encode }}}]
+{%- endset %}
 <!DOCTYPE html>
 <html lang="{{ language.code }}" dir="{{ theme.is_rtl ? 'rtl' : 'ltr' }}"
       data-add-to-cart="{{ trans('azel.common.add_to_cart') }}"
@@ -101,7 +75,7 @@
       data-copied="{{ trans('azel.common.copied') }}"
       data-card-fit="{{ theme.settings.get('card_image_fit', 'contain') is iterable ? theme.settings.get('card_image_fit')|first : theme.settings.get('card_image_fit', 'contain') }}"
       data-card-rating="{{ theme.settings.get('card_show_rating', true) and store.settings.rating_enabled ? '1' : '0' }}"
-      data-grades="{{ azel_grades|json_encode }}"
+      data-grades='{{ azel_grades_json }}'
       data-hide-sold-out="{{ theme.settings.get('hide_sold_out', true) ? '1' : '0' }}">
 <!-- بسم الله الرحمن الرحيم -->
 <!--

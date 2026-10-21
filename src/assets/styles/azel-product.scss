@@ -108,10 +108,10 @@
 .pdp .s-product-options-wrapper{display:block;background:none;padding:0;margin:0;border-radius:0;box-shadow:none}
 .pdp .s-product-options-option-container{margin:26px 0 0;padding:0;background:none;border:0}
 .pdp .s-product-options-option{display:block;padding:0;border:0;background:none}
-.pdp .s-product-options-option-label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 12px;font:600 15px var(--font-head);color:var(--ink);padding:0}
+.pdp .s-product-options-option-label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 12px;font:600 15px/1.7 var(--font-head);color:var(--ink);padding:0}
 .pdp .s-product-options-option-label b{font:inherit}
 .pdp .s-product-options-option-label b span{color:var(--danger)}
-.pdp .s-product-options-option-label small{color:var(--muted);font:500 14px var(--font-body)}
+.pdp .s-product-options-option-label small{color:var(--muted);font:500 14px/1.7 var(--font-body)}
 .pdp .s-product-options-option-content{padding:0;margin:0;overflow:visible}
 .pdp .s-product-options-option-container-error .s-product-options-grid-mode,
 .pdp .s-product-options-option-error .s-product-options-grid-mode,
@@ -165,7 +165,7 @@
 .buy-row salla-add-product-button .s-button-btn:hover{transform:translateY(-1px);box-shadow:var(--shadow);background:var(--green-800)}
 .buy-row salla-add-product-button .s-button-text{display:inline-flex;align-items:center;gap:10px;overflow:visible}
 .buy-row salla-add-product-button .s-button-btn:disabled,.buy-row salla-add-product-button .s-button-disabled{background:var(--line);border-color:var(--line);color:var(--muted)}
-.buy-row .qty{height:58px}
+.buy-row .qty{height:52px}
 .pdp-wish{width:58px!important;height:58px!important;flex:none}
 .pdp-wish.on{color:var(--danger);--btn-fg:var(--danger);--btn-bd:var(--danger)}
 .pdp-wish.on .i{fill:currentColor}

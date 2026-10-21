@@ -18,11 +18,12 @@ let cache = null;
 export function grades() {
     if (cache) return cache;
     try { cache = JSON.parse(document.documentElement.dataset.grades || '[]'); } catch (e) { cache = []; }
-    cache = cache.map((g) => ({
+    // master.twig sends `shade` as a 0–100 setting; a grade with no code is unused
+    cache = cache.filter((g) => g && String(g.id ?? '').trim()).map((g) => ({
         ...g,
-        id: String(g.id),
-        label: String(g.label ?? g.id),
-        alpha: Math.min(1, Math.max(0, Number(g.alpha) || 0)),
+        id: String(g.id).trim(),
+        label: String(g.label ?? g.id).trim(),
+        alpha: Math.min(1, Math.max(0, g.alpha !== undefined ? Number(g.alpha) || 0 : (Number(g.shade) || 0) / 100)),
         heat: Number(g.heat) || 0,
         uv: Number(g.uv) || 0,
         privacy: Number(g.privacy) || 0,
