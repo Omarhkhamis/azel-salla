@@ -8,8 +8,12 @@
 | page.slug    | string                |             |
 | page.type    | string                |             |
 
-  AZEL — info pages (من نحن، سياسة الضمان والاسترجاع، الشحن…) drawn with the
-  design's dark page head and a white prose card.
+  AZEL — info pages, written as HTML in the Salla dashboard.
+    - content with its own sections (e.g. the install-centers page pasted
+      from the design, using its classes: page-hero, c-center, cta-band…)
+      is printed as is, full width — the page owns its whole layout
+    - plain text content (policies, about…) gets the design's dark page
+      head and a white prose card
 #}
 {% extends "layouts.master" %}
 {% block styles_after %}
@@ -24,6 +28,8 @@
         Fires before the main informative page content section.
     #}
     <div class="s-blocks-wrapper s-information-page !mt-0">{% hook 'information_page.information_page' %}</div>
+{% elseif '<section' in page.content|default('') %}
+    <div class="az azel-html-page">{{ page.content|raw }}</div>
 {% else %}
     <section class="page-hero az">
         <div class="container">

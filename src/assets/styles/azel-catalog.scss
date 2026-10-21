@@ -1,6 +1,8 @@
 /* ============================================================================
    AZEL — category / listing page (pages/product/index.twig), and the info
-   pages (page-single.twig).
+   pages (page-single.twig). The design's page classes (install centers,
+   CTA band, pills…) stay here so a page whose HTML is pasted into the Salla
+   dashboard can use them as they are.
    Layout rules are the design's (Azel+/shop.html). The filter
    card is Salla's own <salla-filters>: its content comes from what the
    merchant configured, and the rules under "salla-filters" dress its markup
@@ -9,6 +11,7 @@
 
 @import './01-settings/global';
 @import './azel/pills';
+@import './azel/cta';
 
 /* ============ المتجر ============ */
 .shop-layout{display:grid;grid-template-columns:270px 1fr;gap:32px;align-items:start}
@@ -94,3 +97,45 @@
 .prose th,.prose td{padding:12px 16px;text-align:start;border-bottom:1px solid var(--line-2)}
 .prose th{background:var(--green-50);font-weight:600}
 .info-comments{margin-top:28px}
+
+/* ============ مراكز التركيب (لصفحات HTML من لوحة سلة) ============ */
+.city-bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.city-bar .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;font-size:15px}
+.city-bar .pill .n{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--green-50);color:var(--green-700);font-size:12px;font-weight:700;display:inline-grid;place-items:center;font-family:var(--font-head)}
+.city-bar .pill.active .n{background:var(--lime);color:var(--green-900)}
+.centers-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-block:36px 18px}
+.centers-head h2{font-size:22px;display:flex;align-items:center;gap:10px}
+.special-tag{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:var(--green-900);color:var(--lime);font-size:14px;font-weight:600}
+.centers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.centers-grid > *{min-width:0}
+.c-center{position:relative;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;gap:18px;padding:24px;border-radius:var(--r-lg);color:#fff;background:linear-gradient(155deg,var(--green-800),var(--green-950));transition:transform .3s var(--ease),box-shadow .3s}
+.c-center::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.06;background:repeating-linear-gradient(115deg,#fff 0 1px,transparent 1px 34px)}
+.c-center::after{content:"";position:absolute;z-index:-1;width:220px;height:220px;inset-inline-start:-80px;bottom:-110px;border-radius:50%;background:radial-gradient(circle,rgba(200,225,21,.22),transparent 70%)}
+.c-center:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.c-top{display:flex;align-items:flex-start;gap:14px}
+.c-pin{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:rgba(200,225,21,.12);color:var(--lime);border:1px solid rgba(200,225,21,.25);flex:none}
+.c-top h3{font-size:18px;line-height:1.4;color:#fff}
+.c-addr{display:flex;align-items:center;gap:6px;color:#A9C2B9;font-size:14px;margin-top:4px}
+.c-price{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}
+.c-price span{font-size:13px;color:#CFE0DA;line-height:1.5}
+.c-price b{font-family:var(--font-head);font-size:30px;color:var(--lime);line-height:1;white-space:nowrap}
+.c-price b small{font-size:13px;font-weight:500;color:#CFE0DA;margin-inline-start:4px}
+.c-center .btn{margin-top:auto}
+.c-badge{position:absolute;top:18px;inset-inline-end:18px;padding:3px 10px;border-radius:999px;background:var(--lime);color:var(--green-900);font-size:11.5px;font-weight:700;font-family:var(--font-head)}
+.centers-empty{text-align:center;padding:56px 20px;border-radius:var(--r-lg);background:#fff;border:1.5px dashed var(--line)}
+.centers-empty .empty-ico{width:76px;height:76px;margin:0 auto 16px;border-radius:50%;display:grid;place-items:center;background:var(--green-50);color:var(--green-700)}
+.centers-empty h3{font-size:20px;margin-bottom:6px}
+.centers-empty p{color:var(--muted);max-width:420px;margin-inline:auto}
+.centers-empty .btn{margin-top:24px}
+.how-install{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.how-install .hi{display:flex;gap:14px;align-items:flex-start;padding:20px;background:#fff;border:1px solid var(--line);border-radius:var(--r)}
+.how-install .hi .n{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--green-700);color:var(--lime);font-family:var(--font-head);font-weight:700;flex:none}
+.how-install .hi b{display:block;font-family:var(--font-head);font-size:15.5px}
+.how-install .hi p{color:var(--muted);font-size:14px}
+.centers-cta{padding-bottom:clamp(56px,8vw,104px)}
+@media (max-width:1024px){.centers-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:680px){
+  .centers-grid,.how-install{grid-template-columns:1fr}
+  .city-bar{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none;margin-inline:calc(var(--gutter) * -1);padding-inline:var(--gutter)}
+  .city-bar .pill{flex:none}
+}
