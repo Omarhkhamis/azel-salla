@@ -1,0 +1,30 @@
+{#
+  AZEL — «تسوّق حسب القسم»: image tiles with a round arrow.
+  Registered in twilight.json as `home.azel-categories` («عازل — الأقسام»).
+
+  component.eyebrow, title, subtitle, link_text / link_url
+  component.tiles[] — .image, .name, .sub (the small line, e.g. «5 منتجات»), .url
+#}
+{% if component.tiles|length %}
+<section class="section bg-white-az az">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                {% if component.eyebrow %}<span class="eyebrow">{{ component.eyebrow }}</span>{% endif %}
+                {% if component.title %}<h2 class="section-title">{{ component.title }}</h2>{% endif %}
+                {% if component.subtitle %}<p class="section-sub">{{ component.subtitle }}</p>{% endif %}
+            </div>
+            {% if component.link_text %}<a href="{{ component.link_url|default('#') }}" class="link">{{ component.link_text }} {% include 'pages.partials.azel.icon' with { i: 'arrowL', c: 'i-sm i-flip' } %}</a>{% endif %}
+        </div>
+        <div class="cat-tiles">
+            {% for c in component.tiles %}
+                <a href="{{ c.url|default('#') }}" class="cat-tile">
+                    <span class="ct-img">{% if c.image %}<img src="{{ c.image }}" alt="" loading="lazy">{% endif %}</span>
+                    <span class="ct-body"><b>{{ c.name }}</b>{% if c.sub %}<small>{{ c.sub }}</small>{% endif %}</span>
+                    <span class="ct-go">{% include 'pages.partials.azel.icon' with { i: 'arrowL', c: 'i-sm i-flip' } %}</span>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}

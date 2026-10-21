@@ -1,0 +1,44 @@
+{#
+  AZEL — «اكتشف إكسسواراتنا»: category tabs over a product grid.
+  Registered in twilight.json as `home.azel-showcase` («عازل — منتجات بتبويبات»).
+
+  component.eyebrow, title
+  component.all_label    — the first tab (latest products from every category);
+                           empty removes it
+  component.categories   — the tabs: categories picked from the store, in order
+  component.tab_names    — optional, one name per line in the same order, when
+                           a tab should read shorter than the category's name
+  component.limit        — products per tab
+  component.more_text / more_url — the button under the grid; on a category
+                           tab it leads to that category
+
+  Only the visible tab's <salla-products-list> exists: azel-home.js builds a
+  tab's list the first time it is opened, from the data-* below.
+#}
+{% set uid = 'sc-' ~ position|default(0) %}
+{% set limit = component.limit|default(8) %}
+{% set names = component.tab_names|default('')|replace({"\r": ""})|split("\n") %}
+<section class="section az" data-showcase id="{{ uid }}">
+    <div class="container">
+        <div class="section-head center">
+            {% if component.eyebrow %}<span class="eyebrow">{{ component.eyebrow }}</span>{% endif %}
+            {% if component.title %}<h2 class="section-title">{{ component.title }}</h2>{% endif %}
+        </div>
+        <div class="cat-pills showcase-tabs" role="tablist">
+            {% if component.all_label %}
+                <button type="button" class="pill" role="tab" data-tab-source="latest" data-tab-url="{{ component.more_url|default('') }}">{{ component.all_label }}</button>
+            {% endif %}
+            {% for c in component.categories %}
+                {% set cid = c.id is defined ? c.id : c %}
+                {% set cname = names[loop.index0]|default('')|trim ?: (c.name is defined ? c.name : (c.label is defined ? c.label : (c.title is defined ? c.title : ''))) %}
+                {% if cid %}
+                    <button type="button" class="pill" role="tab" data-tab-source="categories" data-tab-id="{{ cid }}" data-tab-url="{{ c.url is defined ? c.url : '' }}">{{ cname }}</button>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="products" data-showcase-grid data-limit="{{ limit }}"></div>
+        {% if component.more_text %}
+            <div class="section-more"><a href="{{ component.more_url|default('#') }}" class="btn btn-outline" data-showcase-more data-default-url="{{ component.more_url|default('#') }}">{{ component.more_text }}</a></div>
+        {% endif %}
+    </div>
+</section>

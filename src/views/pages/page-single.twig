@@ -1,0 +1,191 @@
+{#
+| Variable     | Type                  | Description |
+|--------------|-----------------------|-------------|
+| page         | Page                  |             |
+| page.title   | string                |             |
+| page.content | string                |             |
+| page.url     | string                |             |
+| page.slug    | string                |             |
+| page.type    | string                |             |
+
+  AZEL — info pages (من نحن، سياسة الضمان والاسترجاع، الشحن…) drawn with the
+  design's dark page head and a white prose card.
+
+  One page is special: the page whose title is the theme setting
+  `centers_page_title` («مراكز التركيب» by default) renders the design's
+  install-centers page (Azel+/centers.html) — city pills, the centers of the
+  picked city, «كيف تستفيد من السعر الخاص؟» and the help band. The centers are
+  the theme setting `centers_list`, one per line:
+      المدينة | اسم المركز | العنوان | سعر التركيب | مميز | رابط خرائط جوجل
+  The page's own content, when the merchant writes any, shows above the list.
+#}
+{% extends "layouts.master" %}
+{% block styles_after %}
+    <link rel="stylesheet" href="{{ 'azel-catalog.css' | asset }}">
+{% endblock %}
+{% block content %}
+{% set title = (page.title is iterable ? page.title[user.language.code]|default(page.title|first) : page.title) %}
+{% set centers_title = theme.settings.get('centers_page_title', 'مراكز التركيب')|trim %}
+{% set is_centers = centers_title and title|trim == centers_title %}
+
+{% if page.type == 'customised' %}
+    {#
+        Hook: information_page.information_page
+        Fires before the main informative page content section.
+    #}
+    <div class="s-blocks-wrapper s-information-page !mt-0">{% hook 'information_page.information_page' %}</div>
+{% elseif is_centers %}
+    {% set wa = theme.settings.get('whatsapp_number')|default(store.contacts.whatsapp)|default('')|replace({' ': '', '+': '', '-': '', '(': '', ')': ''}) %}
+    {% set wa_url = wa ? 'https://wa.me/' ~ wa : '' %}
+
+    {# ---- the centers, parsed once ---- #}
+    {% set centers = [] %}
+    {% for line in theme.settings.get('centers_list', '')|replace({"\r": ""})|split("\n") %}
+        {% set p = line|split('|') %}
+        {% set city = p[0]|default('')|trim %}
+        {% set name = p[1]|default('')|trim %}
+        {% if city and name %}
+            {% set featured = p[4]|default('')|trim %}
+            {% set centers = centers|merge([{
+                city: city, name: name,
+                addr: p[2]|default('')|trim,
+                price: p[3]|default('')|trim,
+                featured: featured and featured not in ['0', 'لا', 'no', 'No', 'false'],
+                map: p[5]|default('')|trim
+            }]) %}
+        {% endif %}
+    {% endfor %}
+    {% set cities = [] %}
+    {% for c in theme.settings.get('centers_cities', '')|replace({"\r": "", "،": "\n", ",": "\n"})|split("\n") %}
+        {% if c|trim and c|trim not in cities %}{% set cities = cities|merge([c|trim]) %}{% endif %}
+    {% endfor %}
+    {% for c in centers %}
+        {% if c.city not in cities %}{% set cities = cities|merge([c.city]) %}{% endif %}
+    {% endfor %}
+
+    <section class="page-hero az">
+        <div class="container">
+            <nav class="crumbs" aria-label="{{ trans('azel.common.breadcrumbs') }}"><salla-breadcrumb></salla-breadcrumb></nav>
+            <span class="chip chip-dark">{% include 'pages.partials.azel.icon' with { i: 'pin', c: 'i-xs' } %} {{ trans('azel.centers.chip') }}</span>
+            <h1>{{ theme.settings.get('centers_heading')|default(title) }}</h1>
+            {% set intro = theme.settings.get('centers_intro', '') %}
+            {% if intro %}<p>{{ intro }}</p>{% endif %}
+        </div>
+    </section>
+
+    <section class="section-sm az" data-centers>
+        <div class="container">
+            {% if page.content|striptags|trim %}
+                <div class="policy-body prose content-entry info-wrap" style="margin:0 auto 32px">{{ page.content|raw }}</div>
+            {% endif %}
+
+            {% if cities|length %}
+            <nav class="city-bar" aria-label="{{ trans('azel.centers.pick_city') }}">
+                {% for city in cities %}
+                    {% set n = 0 %}
+                    {% for c in centers %}{% if c.city == city %}{% set n = n + 1 %}{% endif %}{% endfor %}
+                    <button type="button" class="pill" data-city="{{ city }}">{{ city }}{% if n %}<span class="n">{{ n }}</span>{% endif %}</button>
+                {% endfor %}
+            </nav>
+
+            {% for city in cities %}
+                {% set list = [] %}
+                {% for c in centers %}{% if c.city == city and c.featured %}{% set list = list|merge([c]) %}{% endif %}{% endfor %}
+                {% for c in centers %}{% if c.city == city and not c.featured %}{% set list = list|merge([c]) %}{% endif %}{% endfor %}
+                {% set any_featured = list|length and list[0].featured %}
+                <div data-city-group="{{ city }}"{{ loop.first ? '' : ' hidden' }}>
+                    <div class="centers-head">
+                        <h2>{% include 'pages.partials.azel.icon' with { i: 'pin' } %} {{ trans('azel.centers.city_title', {'city': city}) }}</h2>
+                        {% if any_featured %}<span class="special-tag">{% include 'pages.partials.azel.icon' with { i: 'star', c: 'i-sm' } %} {{ theme.settings.get('centers_special_tag')|default(trans('azel.centers.special_tag')) }}</span>{% endif %}
+                    </div>
+                    {% if list|length %}
+                    <div class="centers-grid">
+                        {% for c in list %}
+                            {% set map = c.map ?: 'https://www.google.com/maps/search/?api=1&query=' ~ (c.name ~ ' ' ~ c.addr ~ ' ' ~ c.city)|url_encode %}
+                            <article class="c-center">
+                                {% if c.featured %}<span class="c-badge">{{ trans('azel.centers.featured') }}</span>{% endif %}
+                                <div class="c-top">
+                                    <span class="c-pin">{% include 'pages.partials.azel.icon' with { i: 'pin' } %}</span>
+                                    <div><h3>{{ c.name }}</h3>{% if c.addr %}<p class="c-addr">{% include 'pages.partials.azel.icon' with { i: 'nav', c: 'i-xs' } %} {{ c.addr }} — {{ c.city }}</p>{% endif %}</div>
+                                </div>
+                                {% if c.price %}<div class="c-price"><span>{{ trans('azel.centers.special_price') }}<br>{{ trans('azel.centers.for_customers', {'store': store.name}) }}</span><b class="num">{{ c.price }}<small>{{ trans('azel.centers.currency') }}</small></b></div>{% endif %}
+                                <a href="{{ map }}" target="_blank" rel="noopener" class="btn btn-lime btn-block">{% include 'pages.partials.azel.icon' with { i: 'nav', c: 'i-sm' } %} {{ trans('azel.centers.directions') }}</a>
+                            </article>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="centers-empty">
+                        <div class="empty-ico">{% include 'pages.partials.azel.icon' with { i: 'pin', c: 'i-lg' } %}</div>
+                        <h3>{{ trans('azel.centers.empty_title', {'city': city}) }}</h3>
+                        <p>{{ trans('azel.centers.empty_text') }}</p>
+                        {% if wa_url %}<a href="{{ wa_url }}?text={{ trans('azel.centers.wa_message', {'city': city, 'store': store.name})|url_encode }}" class="btn btn-wa" target="_blank" rel="noopener">{% include 'pages.partials.azel.icon' with { i: 'wa', c: 'i-sm' } %} {{ trans('azel.centers.ask_wa') }}</a>{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </section>
+
+    {% set steps = theme.settings.get('centers_steps', '')|trim %}
+    {% if steps %}
+    <section class="section-sm az">
+        <div class="container">
+            <div class="section-head center">
+                {% if theme.settings.get('centers_steps_eyebrow') %}<span class="eyebrow">{{ theme.settings.get('centers_steps_eyebrow') }}</span>{% endif %}
+                {% if theme.settings.get('centers_steps_title') %}<h2 class="section-title">{{ theme.settings.get('centers_steps_title') }}</h2>{% endif %}
+            </div>
+            <div class="how-install">
+                {% set k = 0 %}
+                {% for line in steps|replace({"\r": ""})|split("\n") %}
+                    {% set p = line|split('|') %}
+                    {% if p[0]|trim %}
+                        {% set k = k + 1 %}
+                        <div class="hi"><span class="n">{{ k }}</span><div><b>{{ p[0]|trim }}</b>{% if p[1]|default('')|trim %}<p>{{ p[1]|trim }}</p>{% endif %}</div></div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    {% set cta_title = theme.settings.get('centers_cta_title', '') %}
+    {% if cta_title %}
+    <section class="section-sm centers-cta az">
+        <div class="container">
+            <div class="cta-band">
+                <div>
+                    {% if theme.settings.get('centers_cta_eyebrow') %}<span class="eyebrow">{{ theme.settings.get('centers_cta_eyebrow') }}</span>{% endif %}
+                    <h2>{{ cta_title }}</h2>
+                    {% if theme.settings.get('centers_cta_text') %}<p>{{ theme.settings.get('centers_cta_text') }}</p>{% endif %}
+                </div>
+                <div class="cta-actions">
+                    {% if wa_url %}<a href="{{ wa_url }}" class="btn btn-lime btn-lg" target="_blank" rel="noopener">{% include 'pages.partials.azel.icon' with { i: 'wa', c: 'i-sm' } %} {{ trans('azel.centers.contact_wa') }}</a>{% endif %}
+                    {% set b2 = theme.settings.get('centers_cta_btn_text', '') %}
+                    {% if b2 %}<a href="{{ theme.settings.get('centers_cta_btn_url')|default(store.url) }}" class="btn btn-ghost-light btn-lg">{{ b2 }}</a>{% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+{% else %}
+    <section class="page-hero az">
+        <div class="container">
+            <nav class="crumbs" aria-label="{{ trans('azel.common.breadcrumbs') }}"><salla-breadcrumb></salla-breadcrumb></nav>
+            <h1>{{ title }}</h1>
+        </div>
+    </section>
+    <section class="section-sm az">
+        <div class="container info-wrap">
+            <div class="policy-body">
+                <div class="prose content-entry">{{ page.content|raw }}</div>
+            </div>
+            <div class="info-comments"><salla-comments item-id="{{ page.id }}" type="page"></salla-comments></div>
+        </div>
+    </section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+    {% if is_centers %}<script defer src="{{ 'azel-catalog.js' | asset }}"></script>{% endif %}
+{% endblock %}

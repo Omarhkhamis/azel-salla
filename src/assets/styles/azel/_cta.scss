@@ -1,0 +1,10 @@
+/* ============ شريط الدعوة ============ */
+.cta-band{position:relative;overflow:hidden;isolation:isolate;border-radius:var(--r-xl);background:var(--green-700);color:#fff;padding:clamp(32px,5vw,60px);display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center}
+.cta-band > *{min-width:0}
+.cta-band::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(60% 120% at 0% 100%,rgba(200,225,21,.25),transparent 60%)}
+.cta-band::after{content:"";position:absolute;z-index:-1;width:380px;height:380px;inset-inline-start:-90px;top:-160px;border:60px solid rgba(255,255,255,.04);border-radius:50%}
+.cta-band .eyebrow{color:var(--lime)}
+.cta-band h2{font-size:clamp(26px,3.2vw,38px);margin-top:8px;color:#fff}
+.cta-band p{color:#CFE0DA;margin-top:12px;font-size:16.5px}
+.cta-actions{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap}
+@media (max-width:860px){.cta-band{grid-template-columns:1fr}.cta-actions{justify-content:flex-start}}

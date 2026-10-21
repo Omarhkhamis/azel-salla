@@ -1,0 +1,164 @@
+{
+  "blocks": {
+    "header": {
+      "cart": "Cart"
+    },
+    "appBanner": {
+      "download_now": "download now"
+    }
+  },
+  "pages": {
+    "cart": {
+      "cart_options": "Cart Options"
+    },
+    "order": {
+      "can_edit_or_delete_your_review_within": "You can edit or delete your review within",
+      "edit_period_ended": "The period to edit the review has ended",
+      "delete_period_ended": "The period to delete the review has ended",
+      "days_since_added": "days since it was added",
+      "option_name": "Option name",
+      "option_content": "Content"
+    }
+  },
+  "common": {
+    "bank_offer_sub_title_multiple": "Pay for your purchases via one of the following bank cards and get the specified discount",
+    "bank_offer_sub_title_single": "Pay for your purchases via :bank_name bank card and get discount"
+  },
+  "azel": {
+    "common": {
+      "store": "Store",
+      "home": "Home",
+      "menu": "Menu",
+      "search": "Search",
+      "close": "Close",
+      "image": "Image",
+      "breadcrumbs": "Breadcrumbs",
+      "sold_out": "Sold out",
+      "add_to_cart": "Add to cart",
+      "choose_options": "Choose options",
+      "discount": "Off",
+      "quantity": "Quantity",
+      "wishlist": "Add to wishlist",
+      "load_more": "Load more",
+      "filters": "Filter",
+      "sort": "Sort",
+      "copy": "Copy",
+      "copy_code": "Copy code",
+      "copied": "Code :code copied",
+      "whatsapp_cta": "Chat on WhatsApp"
+    },
+    "header": {
+      "announcements": "Store announcements",
+      "main_menu": "Main menu",
+      "browse_all": "Browse all products",
+      "sections": "Categories",
+      "account": "My account",
+      "whatsapp": "WhatsApp us",
+      "call": "Call us"
+    },
+    "search": {
+      "placeholder": "Search for film, chargers, earbuds, diffusers...",
+      "popular": "Popular:",
+      "all_results": "See all results",
+      "none": "No results for “:q” — try another word."
+    },
+    "cart": {
+      "title": "Shopping cart",
+      "empty_title": "Your cart is empty",
+      "empty_text": "Browse our products and start protecting your car from the sun.",
+      "empty_btn": "Shop now",
+      "total": "Total",
+      "note": "Prices include VAT. Shipping and discounts are calculated at checkout.",
+      "view": "View cart",
+      "checkout": "Checkout",
+      "free_left": "Add :amount for free shipping",
+      "free_done": "Your order ships free!",
+      "less": "Decrease",
+      "more": "Increase",
+      "remove": "Remove",
+      "added": "Added to cart",
+      "step_cart": "Cart",
+      "step_shipping": "Shipping & payment",
+      "step_confirm": "Confirmation",
+      "items": "items",
+      "continue": "Continue shopping"
+    },
+    "footer": {
+      "customer_service": "Customer service",
+      "whatsapp": "WhatsApp",
+      "call": "Call us",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "snapchat": "Snapchat",
+      "youtube": "YouTube",
+      "facebook": "Facebook",
+      "business_platform": "Business Platform",
+      "maroof": "Verified on Maroof",
+      "rights": " — All rights reserved",
+      "payment_methods": "Payment methods"
+    },
+    "tint": {
+      "heat": "Heat rejection TSER",
+      "uv": "UV block",
+      "privacy": "Privacy"
+    },
+    "home": {
+      "products_empty": "Pick a product source for this section in the Design Editor."
+    },
+    "voice": {
+      "one": "voice review",
+      "many": "voice reviews",
+      "play": "Play review",
+      "pause": "Pause review",
+      "position": "Playback position",
+      "soon": "Soon"
+    },
+    "shop": {
+      "all": "All",
+      "sections": "Categories",
+      "showing": "Showing :n products",
+      "copy_code": "Copy code"
+    },
+    "product": {
+      "in_stock": "In stock",
+      "sku": "SKU",
+      "reviews_count": "reviews",
+      "save": "Save",
+      "bnpl": "Split it into 4 interest-free payments of :amount",
+      "zones_title": "Pick a tint grade for each side",
+      "zones_hint": "Your way",
+      "unpicked": "Not picked",
+      "picked_zone": ":name · :heat% heat rejection",
+      "front": "Front",
+      "same_for_all": "Same grade for all:",
+      "zones_error": "Please pick a tint grade for every side before adding to cart.",
+      "options_error": "Please choose all required options before adding to cart.",
+      "selected": "Selected",
+      "add_to_cart": "Add to cart",
+      "buy_now": "Buy now",
+      "tab_description": "Description",
+      "tab_specs": "Specifications",
+      "tab_reviews": "Reviews",
+      "tab_shipping": "Shipping & returns",
+      "shipping": "Shipping",
+      "returns": "Returns",
+      "related": "You may also like"
+    },
+    "centers": {
+      "chip": "Approved centers",
+      "pick_city": "Pick a city",
+      "city_title": ":city centers",
+      "special_tag": "Featured centers — special price",
+      "featured": "Featured",
+      "special_price": "Special install price",
+      "for_customers": "for :store customers",
+      "currency": "SAR",
+      "directions": "Directions in Google Maps",
+      "empty_title": "Approved centers are coming to :city",
+      "empty_text": "Message us on WhatsApp and we'll recommend a trusted install center near you.",
+      "ask_wa": "Ask us on WhatsApp",
+      "wa_message": "Hello, I'm looking for a :store install center in :city",
+      "contact_wa": "WhatsApp us"
+    }
+  }
+}

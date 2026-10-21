@@ -1,0 +1,27 @@
+/* AZEL — the tint-grade swatches and meters (hero card, product page) */
+.grades{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:28px}
+.grade{position:relative;border-radius:14px;padding:10px 6px 12px;text-align:center;border:1.5px solid rgba(255,255,255,.14)!important;background:rgba(255,255,255,.03)!important;color:#fff;transition:border-color .2s,background .2s,transform .2s}
+.grade:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.35)!important}
+.grade .sw{height:38px;border-radius:8px;margin-bottom:8px;border:1px solid rgba(255,255,255,.12);background-image:linear-gradient(rgba(3,22,17,var(--a)),rgba(3,22,17,var(--a))),linear-gradient(180deg,#9FD0EC,#E9D9A8)}
+.grade b{font-family:var(--font-head);font-size:22px;letter-spacing:.04em;display:block;line-height:1.2}
+.grade span{font-size:11.5px;color:#A9C2B9}
+.grade.active{border-color:var(--lime)!important;background:rgba(200,225,21,.08)!important}
+.grade.active b{color:var(--lime)}
+.tint-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}
+.meter{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px}
+.meter span{font-size:12.5px;color:#A9C2B9;display:block}
+.meter b{font-family:var(--font-head);font-size:24px;color:#fff;display:block;line-height:1.3}
+.meter .bar{height:5px;border-radius:5px;background:rgba(255,255,255,.1);margin-top:8px;overflow:hidden}
+.meter .bar i{display:block;height:100%;width:0;background:var(--lime);border-radius:5px;transition:width .5s var(--ease)}
+@media (max-width:520px){
+  .grades{gap:8px}
+  .grade{padding:8px 4px 10px}
+  .tint-stats{gap:8px}.meter{padding:10px}.meter b{font-size:19px}
+}
+
+/* light variant of grades (product page) */
+.light .grade{border-color:var(--line)!important;background:#fff!important;color:var(--ink)}
+.light .grade:hover{border-color:var(--green-200)!important}
+.light .grade span{color:var(--muted)}
+.light .grade.active{border-color:var(--green-700)!important;background:var(--green-50)!important;box-shadow:0 0 0 3px rgba(1,77,60,.08)}
+.light .grade.active b{color:var(--green-700)}

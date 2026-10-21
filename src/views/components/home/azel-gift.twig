@@ -1,0 +1,26 @@
+{#
+  AZEL — the bundle offer band («ظلّل سيارتك واختر هديتك»).
+  Registered in twilight.json as `home.azel-gift` («عازل — بنر الهدايا»).
+
+  component.eyebrow, title, text, btn_text / btn_url
+  component.items[] — .image, .name, .url  (the gifts shown beside the text)
+#}
+<section class="section-sm az azel-gift-sec">
+    <div class="container">
+        <div class="gift-banner reveal">
+            <div class="gb-text">
+                {% if component.eyebrow %}<span class="eyebrow">{{ component.eyebrow }}</span>{% endif %}
+                {% if component.title %}<h2>{{ component.title }}</h2>{% endif %}
+                {% if component.text %}<p>{{ component.text }}</p>{% endif %}
+                {% if component.btn_text %}<a href="{{ component.btn_url|default('#') }}" class="btn btn-lime btn-lg">{{ component.btn_text }}</a>{% endif %}
+            </div>
+            {% if component.items|length %}
+            <div class="gb-items">
+                {% for g in component.items %}
+                    <a href="{{ g.url|default('#') }}" class="gb-item"><span>{% if g.image %}<img src="{{ g.image }}" alt="" loading="lazy">{% endif %}</span><b>{{ g.name }}</b></a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>

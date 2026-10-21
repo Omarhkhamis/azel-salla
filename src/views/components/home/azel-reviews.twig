@@ -1,0 +1,42 @@
+{#
+  AZEL — «ثقة بنيناها مع كل عميل»: three quote cards and the rating summary.
+  Registered in twilight.json as `home.azel-reviews` («عازل — آراء العملاء»).
+
+  component.eyebrow, title
+  component.rating, rating_note — the big number beside the stars; empty hides it
+  component.verified_label      — «مشتري موثّق»; empty hides the tick
+  component.reviews[]           — .text, .name, .city
+#}
+{% set rating = component.rating|default('')|trim %}
+<section class="section az">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                {% if component.eyebrow %}<span class="eyebrow">{{ component.eyebrow }}</span>{% endif %}
+                {% if component.title %}<h2 class="section-title">{{ component.title }}</h2>{% endif %}
+            </div>
+            {% if rating %}
+            <div class="rating-summary">
+                <span class="big num">{{ rating }}</span>
+                <div>
+                    <span class="stars">{% for n in 1..5 %}{% include 'pages.partials.azel.icon' with { i: 'star' } %}{% endfor %}</span>
+                    {% if component.rating_note %}<div class="muted rs-note">{{ component.rating_note }}</div>{% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="reviews">
+            {% for r in component.reviews %}
+                {% if r.text %}
+                <figure class="review reveal"><q>{{ r.text }}</q>
+                    <figcaption class="reviewer">
+                        <span class="avatar">{{ r.name|default('')|trim|slice(0, 1) }}</span>
+                        <div><b>{{ r.name }}</b>{% if r.city %}<span>{{ r.city }}</span>{% endif %}</div>
+                        {% if component.verified_label %}<span class="verified">{% include 'pages.partials.azel.icon' with { i: 'check', c: 'i-xs' } %} {{ component.verified_label }}</span>{% endif %}
+                    </figcaption>
+                </figure>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>

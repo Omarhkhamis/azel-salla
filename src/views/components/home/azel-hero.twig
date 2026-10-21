@@ -1,0 +1,62 @@
+{#
+  AZEL — hero («واثقين من جودتنا» + the tint-grade card).
+  Registered in twilight.json as `home.azel-hero` («عازل — الهيرو»).
+
+  component.eyebrow, title_start, highlight (lime), title_end
+  component.lead_start, lead_strong (white), lead_end
+  component.btn1_text/_url (lime), btn2_text/_url (ghost)
+  component.stats[]      — .value (lime number), .label
+  component.tint_*       — the grade card: eyebrow, title, text, default grade,
+                           meter labels, button (its link gets ?grade=NN)
+  component.image        — shown instead of the card when tint_enabled is off
+  The grades themselves are theme settings («درجات التظليل»), shared with the
+  product page.
+#}
+<section class="hero on-dark az">
+    <div class="container hero-inner">
+        <div>
+            {% if component.eyebrow %}<span class="eyebrow">{{ component.eyebrow }}</span>{% endif %}
+            {% if component.title_start or component.highlight or component.title_end %}
+                <h1>{{ component.title_start }}{% if component.highlight %} <em>{{ component.highlight }}</em>{% endif %}{% if component.title_end %} {{ component.title_end }}{% endif %}</h1>
+            {% endif %}
+            {% if component.lead_start or component.lead_strong or component.lead_end %}
+                <p class="hero-lead">{{ component.lead_start }}{% if component.lead_strong %} <strong>{{ component.lead_strong }}</strong>{% endif %}{% if component.lead_end %} {{ component.lead_end }}{% endif %}</p>
+            {% endif %}
+            {% if component.btn1_text or component.btn2_text %}
+            <div class="hero-cta">
+                {% if component.btn1_text %}<a href="{{ component.btn1_url|default('#') }}" class="btn btn-lime btn-lg">{{ component.btn1_text }}</a>{% endif %}
+                {% if component.btn2_text %}<a href="{{ component.btn2_url|default('#') }}" class="btn btn-ghost-light btn-lg">{{ component.btn2_text }}</a>{% endif %}
+            </div>
+            {% endif %}
+            {% if component.stats|length %}
+            <div class="hero-stats">
+                {% for s in component.stats %}
+                    {% if s.value or s.label %}<div><b class="num">{{ s.value }}</b><span>{{ s.label }}</span></div>{% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="hero-visual">
+            {% if component.tint_enabled is not defined or component.tint_enabled %}
+            <div class="hero-tint" data-tint data-default="{{ component.tint_default|default('01')|trim }}" data-cta="{{ component.tint_btn_url|default('') }}">
+                {% if component.tint_eyebrow %}<span class="eyebrow">{{ component.tint_eyebrow }}</span>{% endif %}
+                {% if component.tint_title %}<h2>{{ component.tint_title }}</h2>{% endif %}
+                {% if component.tint_text %}<p class="ht-sub">{{ component.tint_text }}</p>{% endif %}
+                <div class="grades"></div>
+                <p class="ht-desc"><b data-t="name"></b> — <span data-t="desc"></span></p>
+                <div class="tint-stats">
+                    <div class="meter"><span>{{ component.meter_heat|default(trans('azel.tint.heat')) }}</span><b class="num" data-t="heat"></b><div class="bar"><i data-bar="heat"></i></div></div>
+                    <div class="meter"><span>{{ component.meter_uv|default(trans('azel.tint.uv')) }}</span><b class="num" data-t="uv"></b><div class="bar"><i data-bar="uv"></i></div></div>
+                    <div class="meter"><span>{{ component.meter_privacy|default(trans('azel.tint.privacy')) }}</span><b class="num" data-t="privacy"></b><div class="bar"><i data-bar="privacy"></i></div></div>
+                </div>
+                {% if component.tint_btn_text %}
+                    <a href="{{ component.tint_btn_url|default('#') }}" class="btn btn-lime btn-lg btn-block" data-tint-cta>{{ component.tint_btn_text }}</a>
+                {% endif %}
+            </div>
+            {% elseif component.image %}
+                <div class="hero-frame"><img src="{{ component.image }}" alt="{{ component.title_start }} {{ component.highlight }}" fetchpriority="high"></div>
+            {% endif %}
+        </div>
+    </div>
+</section>

@@ -1,0 +1,25 @@
+{#
+  AZEL — the trust strip under the hero (four items, details on hover / tap).
+  Registered in twilight.json as `home.azel-trust` («عازل — شريط الثقة»).
+
+  component.items[] — .icon (one of the design's icons), .title, .sub (the
+                      short line), .more (the detail that replaces it on hover),
+                      .link_text / .link_url (an optional link inside .more)
+#}
+{% if component.items|length %}
+<section class="trust az">
+    <div class="container trust-grid">
+        {% for t in component.items %}
+            {% set ic = t.icon is iterable ? ((t.icon|first).value|default(t.icon|first)) : t.icon %}
+            <div class="trust-item" role="button" tabindex="0" aria-expanded="false" style="--d:{{ loop.index0 * 90 }}ms">
+                <span class="ico">{% include 'pages.partials.azel.icon' with { i: ic|default('award') } %}</span>
+                <div class="ti-text">
+                    <b>{{ t.title }}</b>
+                    <span class="ti-swap"><span class="ti-sub">{{ t.sub }}</span>{% if t.more or t.link_text %}<span class="ti-more">{{ t.more }}{% if t.link_text %} — <a href="{{ t.link_url|default('#') }}"{% if t.link_url starts with 'http' and not (t.link_url starts with store.url) %} target="_blank" rel="noopener"{% endif %}>{{ t.link_text }}</a>{% endif %}</span>{% endif %}</span>
+                </div>
+                <span class="ti-plus" aria-hidden="true"></span>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}

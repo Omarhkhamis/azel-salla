@@ -1,0 +1,22 @@
+{#
+  AZEL — «من الطلب إلى الحماية»: numbered steps with an icon each.
+  Registered in twilight.json as `home.azel-steps` («عازل — خطوات الطلب»).
+
+  component.eyebrow, title, subtitle
+  component.steps[] — .icon, .title, .text
+#}
+<section class="section az">
+    <div class="container">
+        <div class="section-head center">
+            {% if component.eyebrow %}<span class="eyebrow">{{ component.eyebrow }}</span>{% endif %}
+            {% if component.title %}<h2 class="section-title">{{ component.title }}</h2>{% endif %}
+            {% if component.subtitle %}<p class="section-sub">{{ component.subtitle }}</p>{% endif %}
+        </div>
+        <div class="steps">
+            {% for s in component.steps %}
+                {% set ic = s.icon is iterable ? ((s.icon|first).value|default(s.icon|first)) : s.icon %}
+                <div class="step reveal"><span class="ico">{% include 'pages.partials.azel.icon' with { i: ic|default('sun') } %}</span><h3>{{ s.title }}</h3>{% if s.text %}<p>{{ s.text }}</p>{% endif %}</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>

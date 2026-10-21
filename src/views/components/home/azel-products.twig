@@ -1,0 +1,47 @@
+{#
+  AZEL — a product grid with the design's section head.
+  Registered in twilight.json as `home.azel-products` («عازل — شبكة منتجات»).
+  Add it as many times as needed; each instance picks its own source.
+
+  component.eyebrow, title, subtitle, link_text / link_url
+  component.source   — latest | sales | top-rated | offers | categories | selected
+  component.category — the category, when source = categories
+  component.products — the hand-picked products, when source = selected
+  component.limit    — how many to show
+  component.white_bg — the white band of the design's alternate sections
+#}
+{% set source = component.source|default('latest') %}
+{% set source = source is iterable ? ((source|first).value|default(source|first)) : source %}
+{% set limit = component.limit|default(8) %}
+{% set cat = component.category is iterable ? component.category|first : component.category %}
+{% set cat_id = cat.id is defined ? cat.id : cat %}
+{% set ready = source in ['latest', 'sales', 'top-rated', 'offers']
+            or (source == 'categories' and cat_id)
+            or (source == 'selected' and component.products|length) %}
+
+<section class="section az{{ component.white_bg ? ' bg-white-az' : '' }}">
+    <div class="container">
+        {% if component.eyebrow or component.title or component.link_text %}
+        <div class="section-head">
+            <div>
+                {% if component.eyebrow %}<span class="eyebrow">{{ component.eyebrow }}</span>{% endif %}
+                {% if component.title %}<h2 class="section-title">{{ component.title }}</h2>{% endif %}
+                {% if component.subtitle %}<p class="section-sub">{{ component.subtitle }}</p>{% endif %}
+            </div>
+            {% if component.link_text %}<a href="{{ component.link_url|default('#') }}" class="link">{{ component.link_text }} {% include 'pages.partials.azel.icon' with { i: 'arrowL', c: 'i-sm i-flip' } %}</a>{% endif %}
+        </div>
+        {% endif %}
+        {% if ready %}
+        <div class="products">
+            <salla-products-list
+                source="{{ source }}"
+                {% if source == 'categories' %}source-value="[{{ cat_id }}]"{% endif %}
+                {% if source == 'selected' %}source-value="[{% for p in component.products %}{{ p.id is defined ? p.id : p }}{{ loop.last ? '' : ',' }}{% endfor %}]"{% endif %}
+                limit="{{ source == 'selected' ? component.products|length : limit }}"
+                autoload="false"></salla-products-list>
+        </div>
+        {% else %}
+            <p class="az-empty">{{ trans('azel.home.products_empty') }}</p>
+        {% endif %}
+    </div>
+</section>

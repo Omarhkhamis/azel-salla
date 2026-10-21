@@ -1,0 +1,164 @@
+{
+  "blocks": {
+    "header": {
+      "cart": "السلة"
+    },
+    "appBanner": {
+      "download_now": "حمله الان"
+    }
+  },
+  "pages": {
+    "cart": {
+      "cart_options": "خيارات السلة"
+    },
+    "order": {
+      "can_edit_or_delete_your_review_within": "يمكنك تعديل أو حذف تقييمك خلال",
+      "edit_period_ended": "تم انتهاء المدة المحددة لتعديل التقييم",
+      "delete_period_ended": "تم انتهاء المدة المحددة لحذف التقييم",
+      "days_since_added": "أيام من إضافته",
+      "option_name": "الخيار",
+      "option_content": "المحتوى"
+    }
+  },
+  "common": {
+    "bank_offer_sub_title_multiple": "ادفع قيمة مشترياتك عبر أحد البطاقات البنكة التالية واحصل على الخصم المحدد",
+    "bank_offer_sub_title_single": "ادفع قيمة مشترياتك عبر أحد بطاقات بنك :bank_name واحصل على خصم بنسبة "
+  },
+  "azel": {
+    "common": {
+      "store": "المتجر",
+      "home": "الرئيسية",
+      "menu": "القائمة",
+      "search": "بحث",
+      "close": "إغلاق",
+      "image": "صورة",
+      "breadcrumbs": "مسار التنقل",
+      "sold_out": "نفدت الكمية",
+      "add_to_cart": "أضف للسلة",
+      "choose_options": "اختر الخيارات",
+      "discount": "خصم",
+      "quantity": "الكمية",
+      "wishlist": "أضف للمفضلة",
+      "load_more": "عرض المزيد",
+      "filters": "تصفية",
+      "sort": "ترتيب",
+      "copy": "نسخ",
+      "copy_code": "نسخ الكود",
+      "copied": "تم نسخ الكود :code",
+      "whatsapp_cta": "تواصل عبر واتساب"
+    },
+    "header": {
+      "announcements": "إعلانات المتجر",
+      "main_menu": "القائمة الرئيسية",
+      "browse_all": "تصفّح كل المنتجات",
+      "sections": "الأقسام",
+      "account": "حسابي",
+      "whatsapp": "تواصل واتساب",
+      "call": "اتصل بنا"
+    },
+    "search": {
+      "placeholder": "ابحث عن عازل، شاحن، سماعة، فواحة...",
+      "popular": "الأكثر بحثاً:",
+      "all_results": "عرض كل النتائج",
+      "none": "ما لقينا نتائج لـ «:q» — جرّب كلمة ثانية."
+    },
+    "cart": {
+      "title": "سلة التسوق",
+      "empty_title": "سلتك فارغة",
+      "empty_text": "تصفّح منتجاتنا وابدأ بحماية سيارتك من حرارة الشمس.",
+      "empty_btn": "تسوّق الآن",
+      "total": "المجموع",
+      "note": "الأسعار شاملة الضريبة. الشحن والخصم يُحسبان عند إتمام الطلب.",
+      "view": "عرض السلة",
+      "checkout": "إتمام الطلب",
+      "free_left": "أضف :amount للحصول على شحن مجاني",
+      "free_done": "مبروك! طلبك مؤهل للشحن المجاني",
+      "less": "إنقاص",
+      "more": "زيادة",
+      "remove": "حذف",
+      "added": "تمت الإضافة للسلة",
+      "step_cart": "السلة",
+      "step_shipping": "الشحن والدفع",
+      "step_confirm": "تأكيد الطلب",
+      "items": "منتجات",
+      "continue": "متابعة التسوق"
+    },
+    "footer": {
+      "customer_service": "خدمة العملاء",
+      "whatsapp": "واتساب",
+      "call": "اتصال مباشر",
+      "instagram": "انستقرام",
+      "tiktok": "تيك توك",
+      "snapchat": "سناب شات",
+      "youtube": "يوتيوب",
+      "facebook": "فيسبوك",
+      "business_platform": "منصة الأعمال",
+      "maroof": "موثّق في معروف",
+      "rights": " — جميع الحقوق محفوظة",
+      "payment_methods": "طرق الدفع"
+    },
+    "tint": {
+      "heat": "عزل حراري TSER",
+      "uv": "حجب UV",
+      "privacy": "الخصوصية"
+    },
+    "home": {
+      "products_empty": "اختر مصدر المنتجات لهذا القسم من محرر التصميم."
+    },
+    "voice": {
+      "one": "تقييم صوتي",
+      "many": "تقييمات صوتية",
+      "play": "تشغيل التقييم",
+      "pause": "إيقاف التقييم",
+      "position": "موضع التشغيل",
+      "soon": "قريباً"
+    },
+    "shop": {
+      "all": "الكل",
+      "sections": "الأقسام",
+      "showing": "عرض :n منتج",
+      "copy_code": "انسخ الكود"
+    },
+    "product": {
+      "in_stock": "متوفر",
+      "sku": "رمز المنتج",
+      "reviews_count": "تقييم",
+      "save": "وفّر",
+      "bnpl": "قسّمها على 4 دفعات بقيمة :amount بدون فوائد",
+      "zones_title": "اختر درجة التظليل لكل جهة",
+      "zones_hint": "على كيفك",
+      "unpicked": "لم تُحدَّد",
+      "picked_zone": ":name · عزل :heat%",
+      "front": "أمام",
+      "same_for_all": "نفس الدرجة للكل:",
+      "zones_error": "فضلاً اختر درجة التظليل لكل الجهات قبل الإضافة للسلة.",
+      "options_error": "فضلاً اختر كل الخيارات المطلوبة قبل الإضافة للسلة.",
+      "selected": "المختارة",
+      "add_to_cart": "أضف للسلة",
+      "buy_now": "اشترِ الآن",
+      "tab_description": "الوصف",
+      "tab_specs": "المواصفات",
+      "tab_reviews": "التقييمات",
+      "tab_shipping": "الشحن والاسترجاع",
+      "shipping": "الشحن",
+      "returns": "الاسترجاع",
+      "related": "منتجات قد تعجبك"
+    },
+    "centers": {
+      "chip": "المراكز المعتمدة",
+      "pick_city": "اختر المدينة",
+      "city_title": "مراكز :city",
+      "special_tag": "مراكز التركيب المميزة — سعر خاص",
+      "featured": "مميز",
+      "special_price": "سعر تركيب خاص",
+      "for_customers": "لعملاء :store",
+      "currency": "ر.س",
+      "directions": "التوجّه في خرائط جوجل",
+      "empty_title": "نجهّز مراكز معتمدة في :city",
+      "empty_text": "تواصل معنا على الواتساب ونرشّح لك أقرب مركز تركيب موثوق في مدينتك.",
+      "ask_wa": "اسألنا على الواتساب",
+      "wa_message": "السلام عليكم، أبحث عن مركز تركيب :store في :city",
+      "contact_wa": "تواصل واتساب"
+    }
+  }
+}

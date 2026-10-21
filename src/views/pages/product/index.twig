@@ -1,0 +1,153 @@
+{#
+  AZEL — category / listing page (design: Azel+/shop.html).
+| Variable                   | Type        | Description                                                          |
+|----------------------------|-------------|----------------------------------------------------------------------|
+| page.title                 | string      | *could be html                                                       |
+| page.slug                  | string      | ex: "cat.show"                                                       |
+| category                   | ?Category   | .name .url .sub_categories .image                                    |
+| filters                    | bool        | is filters allowed here or not                                       |
+| sort_options[]             | SortList[]  | .id .name .is_selected                                               |
+| search_query               | ?string     |                                                                      |
+
+  Layout: .page-hero (crumbs, title, description) → .shop-layout: the filter
+  card (Salla's <salla-filters>, an off-canvas drawer under 960px) beside the
+  promo banner, the category pills, the toolbar (filter button, «عرض N منتج»,
+  sort) and a 3-column grid of Salla's <salla-products-list> drawing the Azel
+  card.
+#}
+{% extends "layouts.master" %}
+
+{% block styles_after %}
+    <link rel="stylesheet" href="{{ 'azel-catalog.css' | asset }}">
+{% endblock %}
+
+{% block content %}
+{% set title = (page.title is iterable ? page.title[user.language.code]|default(page.title|first) : page.title) %}
+{% set tagline = category.description|default(category.subtitle)|default('')|striptags|trim %}
+{% if not tagline and not category %}{% set tagline = theme.settings.get('shop_default_sub', '') %}{% endif %}
+
+<section class="page-hero az">
+    <div class="container">
+        {% if theme.settings.get('product_index_show_breadcrumbs', true) %}
+            <nav class="crumbs" aria-label="{{ trans('azel.common.breadcrumbs') }}"><salla-breadcrumb></salla-breadcrumb></nav>
+        {% endif %}
+        {# Deliberately not id="page-main-title": the inherited products.js
+           writes the fetched list's title into that id. #}
+        <h1>{{ title|raw }}</h1>
+        {% if tagline %}<p>{{ tagline }}</p>{% endif %}
+    </div>
+</section>
+
+<div class="s-blocks-wrapper s-before-products-list">{% hook 'product.index.before_products_group_with_filter' %}</div>
+
+<section class="section-sm az">
+    <div class="container shop-layout{{ filters ? '' : ' no-filters' }}">
+        {% if filters %}
+            <aside class="filters" id="filters" aria-label="{{ trans('azel.common.filters') }}">
+                <button class="h-btn close-filters" type="button" data-close aria-label="{{ trans('azel.common.close') }}">{% include 'pages.partials.azel.icon' with { i: 'x' } %}</button>
+                <salla-filters></salla-filters>
+            </aside>
+        {% endif %}
+
+        <div>
+            {% set banner_title = theme.settings.get('shop_banner_title', '') %}
+            {% set banner_code = theme.settings.get('shop_banner_code', '')|trim %}
+            {% if theme.settings.get('shop_banner_enabled', true) and (banner_title or banner_code) %}
+            <div class="cat-banner">
+                <div>
+                    {% if banner_title %}<h3>{{ banner_title }}</h3>{% endif %}
+                    <p>{{ theme.settings.get('shop_banner_text_start', '') }}{% if banner_code %} <b class="ltr">{{ banner_code }}</b>{% endif %} {{ theme.settings.get('shop_banner_text_end', '') }}</p>
+                </div>
+                {% if banner_code %}<button class="btn btn-lime btn-sm" type="button" data-copy="{{ banner_code }}">{{ trans('azel.shop.copy_code') }}</button>{% endif %}
+            </div>
+            {% endif %}
+
+            {# The pills: the theme setting's links when filled, otherwise the
+               current category's sub-categories (with its own page as «الكل»). #}
+            {% set pill_links = theme.settings.get('shop_pills_links', '')|trim %}
+            {% if pill_links %}
+                <nav class="cat-pills shop-pills" aria-label="{{ trans('azel.shop.sections') }}" data-pills>
+                    {% for line in pill_links|replace({"\r": ""})|split("\n") %}
+                        {% set parts = line|split('|') %}
+                        {% set label = parts[0]|default('')|trim %}
+                        {% if label %}<a class="pill" href="{{ parts[1]|default('#')|trim }}">{{ label }}</a>{% endif %}
+                    {% endfor %}
+                </nav>
+            {% elseif category and category.sub_categories|default([])|length %}
+                <nav class="cat-pills shop-pills" aria-label="{{ trans('azel.shop.sections') }}" data-pills>
+                    <a class="pill active" href="{{ category.url }}">{{ trans('azel.shop.all') }}</a>
+                    {% for sub in category.sub_categories %}
+                        <a class="pill" href="{{ sub.url }}">{{ sub.name }}</a>
+                    {% endfor %}
+                </nav>
+            {% endif %}
+
+            <div class="toolbar">
+                <div class="toolbar-start">
+                    {% if filters %}
+                        <button class="btn btn-outline btn-sm filter-toggle" type="button" data-open="filters">{% include 'pages.partials.azel.icon' with { i: 'filter', c: 'i-sm' } %} {{ trans('azel.common.filters') }}<b id="fcount"></b></button>
+                    {% endif %}
+                    <span class="count" id="res-count" data-label="{{ trans('azel.shop.showing') }}" hidden></span>
+                </div>
+                {% if sort_options|length %}
+                    <div class="select">
+                        {# the id is the contract with the inherited products.js,
+                           which reloads the list on change and keeps ?sort= in the url #}
+                        <select id="product-filter" aria-label="{{ trans('azel.common.sort') }}">
+                            {% for sort in sort_options %}
+                                <option value="{{ sort.id }}" {{ sort.is_selected ? 'selected' : '' }}>
+                                    {{ (sort.name is iterable ? sort.name[user.language.code]|default(sort.name|first) : sort.name) }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% include 'pages.partials.azel.icon' with { i: 'chevD', c: 'i-sm' } %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% hook 'product:index.items.start' %}
+
+            {# The source is resolved here rather than passed as `page.slug`:
+               salla-products-list maps a slug through its own table, and an
+               unmapped slug comes back empty. source-value must be a JSON array
+               for categories/tags/brands; search wants the raw query. #}
+            {% set list_source = 'categories' %}
+            {% set list_value = '[' ~ page.id ~ ']' %}
+            {% if page.slug starts with 'product.index.search' %}
+                {% set list_source = 'search' %}
+                {% set list_value = search_query %}
+            {% elseif page.slug starts with 'product.index.latest' %}
+                {% set list_source = 'latest' %}
+            {% elseif page.slug starts with 'product.index.offers' %}
+                {% set list_source = 'offers' %}
+            {% elseif page.slug starts with 'product.index.sales' %}
+                {% set list_source = 'sales' %}
+            {% elseif page.slug starts with 'product.index.tag' %}
+                {% set list_source = 'tags' %}
+            {% elseif page.slug starts with 'brands' %}
+                {% set list_source = 'brands' %}
+            {% endif %}
+
+            {# No `limit` on purpose: passing one switches pagination off
+               (hasInfiniteScroll = !limit) and the page stops at one batch. #}
+            <div class="products cols-3" id="grid">
+                <salla-products-list
+                    source="{{ list_source }}"
+                    source-value="{{ list_value }}"
+                    load-more-text="{{ trans('azel.common.load_more') }}"
+                    {{ filters ? 'filters-results' : '' }}></salla-products-list>
+            </div>
+
+            {% hook 'product:index.items.end' %}
+        </div>
+    </div>
+</section>
+
+<div class="s-blocks-wrapper s-after-products-list">{% hook 'product.index.after_products_group_with_filter' %}</div>
+<div class="s-blocks-wrapper">{% hook 'product.index.after_testimonials' %}</div>
+{% endblock %}
+
+{% block scripts %}
+    <script defer src="{{ 'product.js' | asset }}"></script>
+    <script defer src="{{ 'azel-catalog.js' | asset }}"></script>
+{% endblock %}

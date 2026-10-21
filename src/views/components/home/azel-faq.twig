@@ -1,0 +1,30 @@
+{#
+  AZEL — «استفسارات العملاء»: the design's accordion.
+  Registered in twilight.json as `home.azel-faq` («عازل — الأسئلة الشائعة»).
+
+  component.eyebrow, title
+  component.items[]  — .question, .answer (plain text; line breaks kept)
+  component.open_first — the first answer starts open, as in the design
+  component.btn_text / btn_url — the outline button under the list
+#}
+{% if component.items|length %}
+<section class="section bg-white-az az" id="faq">
+    <div class="container">
+        <div class="section-head center">
+            {% if component.eyebrow %}<span class="eyebrow">{{ component.eyebrow }}</span>{% endif %}
+            {% if component.title %}<h2 class="section-title">{{ component.title }}</h2>{% endif %}
+        </div>
+        <div class="faq">
+            {% for f in component.items %}
+                {% if f.question %}
+                <details{{ loop.first and (component.open_first is not defined or component.open_first) ? ' open' : '' }}>
+                    <summary>{{ f.question }}<span class="tog">{% include 'pages.partials.azel.icon' with { i: 'plus', c: 'i-sm' } %}</span></summary>
+                    <div class="ans">{{ f.answer|nl2br }}</div>
+                </details>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% if component.btn_text %}<div class="section-more"><a href="{{ component.btn_url|default('#') }}" class="btn btn-outline">{{ component.btn_text }}</a></div>{% endif %}
+    </div>
+</section>
+{% endif %}

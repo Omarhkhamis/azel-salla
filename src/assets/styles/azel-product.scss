@@ -1,0 +1,235 @@
+/* ============================================================================
+   AZEL — product page (pages/product/single.twig, design: Azel+/product.html)
+   The layout and every visual rule are the design's. Options, quantity and
+   the add-to-cart button are Salla's own components; the "salla-*" blocks
+   below dress their markup as the design's option buttons (.opt-btn), gift
+   cards (.gift), stepper (.qty) and solid button (.btn).
+   ============================================================================ */
+
+@import './01-settings/global';
+@import './azel/grades';
+
+/* ============ التخطيط والمعرض ============ */
+.crumbs-bar{padding-block:18px}
+.pdp{display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(28px,4vw,56px);align-items:start}
+.pdp > *{min-width:0}
+.gallery{position:sticky;top:calc(var(--header-h) + 20px);display:grid;grid-template-columns:84px 1fr;gap:14px}
+.gallery.single{grid-template-columns:1fr}
+.thumbs{display:grid;gap:10px;align-content:start}
+.thumbs button{aspect-ratio:1;border-radius:14px;overflow:hidden;border:2px solid transparent!important;background:#fff!important;transition:border-color .2s}
+.thumbs button.active{border-color:var(--green-700)!important}
+.thumbs img{width:100%;height:100%;object-fit:cover}
+.main-img{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;aspect-ratio:1;border:1px solid var(--line)}
+.main-img img{width:100%;height:100%;object-fit:cover}
+.main-img.contain img{object-fit:contain}
+
+/* ============ المعلومات ============ */
+.pdp-info h1{font-size:clamp(24px,2.8vw,34px);margin-block:10px 12px}
+.pdp-info > .chip:hover{background:var(--green-100)}
+.pdp-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.pdp-meta .sep{width:4px;height:4px;border-radius:50%;background:#C5CFCB}
+.pm-rate{display:inline-flex;align-items:center;gap:8px}
+.pm-rate b{color:var(--ink)}
+.stock{color:var(--ok);font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.stock::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(18,147,95,.15)}
+.stock.is-out{color:var(--danger)}
+.stock.is-out::before{background:var(--danger);box-shadow:0 0 0 4px rgba(217,45,32,.15)}
+.pdp-short{margin-top:16px}
+.pdp-price{display:flex;align-items:center;gap:14px;margin-top:18px;padding:18px 0;border-block:1px solid var(--line);flex-wrap:wrap}
+.pdp-price .price{font-size:34px}
+.pdp-price .price del.hidden{display:none}
+.save-tag{background:var(--lime-100);color:var(--green-700);padding:4px 10px;border-radius:999px;font-size:13px;font-weight:700}
+.save-tag[hidden]{display:none}
+.pdp-oos{font:700 15px var(--font-head);color:var(--danger);margin-top:14px}
+.bnpl{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted);background:#fff;border:1px dashed var(--line);padding:10px 14px;border-radius:12px;margin-top:14px}
+.bnpl[hidden]{display:none}
+.bnpl b{color:var(--ink)}
+.bnpl-logos{display:flex;gap:6px;flex:none}
+.bnpl-logos .pay-ico{width:52px;height:30px;border:1px solid var(--line)}
+.pdp-info salla-conditional-offer{display:block;margin-top:14px}
+
+/* ============ الخيارات ============ */
+.opt{margin-top:26px}
+.opt[hidden]{display:none}
+.opt-label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--font-head);font-weight:600;font-size:15px;margin-bottom:12px;flex-wrap:wrap}
+.opt-label > span{color:var(--muted);font-family:var(--font-body);font-weight:500;font-size:14px}
+.opt-label > span b{color:var(--green-700)}
+.opt-label .ol-t{color:var(--ink);font-family:var(--font-head);font-weight:600;font-size:15px}
+.grade-desc{font-size:14px;margin:-4px 0 12px}
+#opt-grade .grades{margin-top:0}
+.grade:disabled{opacity:.45;cursor:not-allowed}
+.zone-err{color:var(--danger);font-size:13.5px;margin-top:10px;font-weight:500}
+.zone-err[hidden]{display:none}
+
+/* ---- درجة التظليل لكل جهة ---- */
+.zones{display:grid;grid-template-columns:1fr 150px;gap:18px;align-items:start}
+.zones > *{min-width:0}
+.zone-rows{display:grid;gap:10px}
+.zone-row{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;transition:border-color .2s,box-shadow .2s,background .2s}
+.zone-row.hl{border-color:var(--green-200);background:var(--green-50)}
+.zone-row.done{border-color:var(--green-200)}
+.zone-row.missing{border-color:var(--danger);box-shadow:0 0 0 3px rgba(217,45,32,.08)}
+.zone-name{display:flex;align-items:baseline;gap:6px;font-family:var(--font-head);font-weight:600;font-size:14.5px;margin-bottom:10px}
+.zone-name i{color:var(--danger);font-style:normal}
+.zone-name small{margin-inline-start:auto;font-family:var(--font-body);font-weight:500;font-size:12.5px;color:var(--muted)}
+.zone-row.done .zone-name small{color:var(--green-700)}
+.zone-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.zone-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px!important;border-radius:10px;border:1.5px solid var(--line)!important;background:#fff!important;line-height:1.3;transition:.15s}
+.zone-btn b{font-family:var(--font-head);font-size:17px;letter-spacing:.04em}
+.zone-btn span{font-size:11.5px;color:var(--muted);text-align:center}
+.zone-btn:hover{border-color:var(--green-200)!important}
+.zone-btn.active{border-color:var(--green-700)!important;background:var(--green-700)!important;color:#fff}
+.zone-btn.active span{color:var(--lime)}
+.zone-btn:disabled{opacity:.4;cursor:not-allowed}
+.car-diagram{order:2;position:sticky;top:calc(var(--header-h) + 20px);background:var(--green-50);border-radius:18px;padding:14px 10px 26px}
+.car-diagram svg{width:100%;height:auto}
+.car-diagram .body{fill:#fff;stroke:var(--green-200);stroke-width:2}
+.car-diagram .roof{fill:var(--green-100)}
+.car-diagram .light{fill:var(--lime)}
+.car-diagram .glass{fill:url(#glass);stroke:#fff;stroke-width:1.5;transition:fill .3s}
+.car-diagram [data-zone]{cursor:pointer;--a:0}
+.car-diagram [data-zone]:not(.set) .glass{stroke:var(--green-500);stroke-dasharray:3 3}
+.car-diagram [data-zone].set .glass{fill:rgb(3 22 17 / calc(var(--a) * 100%));stroke:var(--green-700)}
+.car-diagram [data-zone].hl .glass{stroke:var(--lime-600);stroke-width:3;stroke-dasharray:none}
+.car-diagram .dlabel{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted)}
+.zone-all{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13.5px;color:var(--muted);flex-wrap:wrap}
+.zone-all[hidden]{display:none}
+.zone-all button{padding:5px 14px!important;border-radius:999px;border:1.5px solid var(--line)!important;background:#fff!important;font-family:var(--font-head);font-weight:600;color:var(--ink)}
+.zone-all button:hover{border-color:var(--green-700)!important}
+.zone-all button.active{background:var(--lime)!important;border-color:var(--lime)!important;color:var(--green-900)}
+@media (max-width:560px){
+  .zones{grid-template-columns:1fr}
+  .car-diagram{position:relative;top:0;order:-1;display:flex;justify-content:center;padding-bottom:14px}
+  .car-diagram svg{width:120px}
+}
+
+/* ---- salla-product-options → the design's option blocks ---- */
+.pdp salla-product-options{display:block}
+.pdp .s-product-options-wrapper{display:block;background:none;padding:0;margin:0;border-radius:0;box-shadow:none}
+.pdp .s-product-options-option-container{margin:26px 0 0;padding:0;background:none;border:0}
+.pdp .s-product-options-option{display:block;padding:0;border:0;background:none}
+.pdp .s-product-options-option-label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 12px;font:600 15px var(--font-head);color:var(--ink);padding:0}
+.pdp .s-product-options-option-label b{font:inherit}
+.pdp .s-product-options-option-label b span{color:var(--danger)}
+.pdp .s-product-options-option-label small{color:var(--muted);font:500 14px var(--font-body)}
+.pdp .s-product-options-option-content{padding:0;margin:0;overflow:visible}
+.pdp .s-product-options-option-container-error .s-product-options-grid-mode,
+.pdp .s-product-options-option-error .s-product-options-grid-mode,
+.pdp .s-product-options-option-error .s-product-options-thumbnails-wrapper{outline:2px solid var(--danger);outline-offset:6px;border-radius:12px}
+/* a grade option is mirrored by the zone / grade pickers: its Salla row stays
+   in the form (and in the tab order for validation) but out of sight */
+.pdp .s-product-options-option-container.az-mirrored{position:absolute!important;width:1px!important;height:1px!important;margin:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap}
+
+/* buttons (single option, button style) → .opt-btn */
+.pdp .s-product-options-grid-mode{display:flex;flex-wrap:wrap;gap:10px;margin:0}
+.pdp .s-product-options-grid-mode label{position:relative;margin:0;padding:0;cursor:pointer}
+.pdp .s-product-options-grid-mode input{position:absolute;opacity:0;pointer-events:none}
+.pdp .s-product-options-grid-mode-span{display:inline-flex;align-items:center;gap:8px;min-height:0;min-width:0;padding:11px 18px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font:500 14.5px var(--font-body);color:var(--ink);transition:.2s}
+.pdp .s-product-options-grid-mode label:hover .s-product-options-grid-mode-span{border-color:var(--green-200);background:#fff}
+.pdp .s-product-options-grid-mode input:checked + .s-product-options-grid-mode-span,
+.pdp .s-product-options-grid-mode input:checked + div{border-color:var(--green-700);background:var(--green-50);color:var(--green-700);font-weight:600;box-shadow:0 0 0 3px rgba(1,77,60,.08)}
+.pdp .s-product-options-disabled .s-product-options-grid-mode-span{opacity:.45;text-decoration:line-through;cursor:not-allowed}
+.pdp salla-product-options select.s-form-control,.pdp salla-product-options .s-form-control{height:50px;border:1.5px solid var(--line);border-radius:12px;font-size:15px;background-color:#fff}
+.pdp salla-product-options .s-form-control:focus{border-color:var(--green-700);box-shadow:0 0 0 4px rgba(1,77,60,.08)}
+
+/* thumbnails (the bundle's gift picker) → .gift cards */
+.pdp .s-product-options-thumbnails-wrapper{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.pdp .s-product-options-thumbnails-wrapper > div{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 8px 12px;border-radius:14px;border:1.5px solid var(--line);background:#fff;text-align:center;transition:border-color .2s,box-shadow .2s,background .2s;margin:0}
+.pdp .s-product-options-thumbnails-wrapper > div:hover{border-color:var(--green-200)}
+.pdp .s-product-options-thumbnails-wrapper > div:has(input:checked){border-color:var(--green-700);background:var(--green-50);box-shadow:0 0 0 3px rgba(1,77,60,.08)}
+.pdp .s-product-options-thumbnails-wrapper input{position:absolute;opacity:0;pointer-events:none}
+.pdp .s-product-options-thumbnails-wrapper label{display:block;width:100%;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--bg);cursor:pointer;margin:0;padding:0;border:0;position:static;height:auto}
+.pdp .s-product-options-thumbnails-wrapper label img{width:100%;height:100%;object-fit:cover;border:0;border-radius:0;opacity:1}
+.pdp .s-product-options-thumbnails-wrapper p{font-size:12.5px;font-weight:600;line-height:1.4;color:var(--ink);margin:0}
+.pdp .s-product-options-thumbnails-icon{position:absolute;top:6px;inset-inline-start:6px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--green-900);opacity:0;transform:scale(.6);transition:.2s var(--ease)}
+.pdp .s-product-options-thumbnails-icon svg{width:12px;height:12px;fill:currentColor}
+.pdp .s-product-options-thumbnails-wrapper > div:has(input:checked) .s-product-options-thumbnails-icon{opacity:1;transform:none}
+@media (max-width:560px){.pdp .s-product-options-thumbnails-wrapper{grid-template-columns:repeat(2,1fr)}}
+
+/* colours → round swatches with the design's active ring */
+.pdp .s-product-options-colors-wrapper{display:flex;gap:12px;flex-wrap:wrap}
+.pdp .s-product-options-colors-wrapper input[type=radio]:checked+label span{box-shadow:0 0 0 3px #fff,0 0 0 5px var(--green-700)}
+
+/* ============ الشراء ============ */
+.buy-row{display:flex;gap:12px;margin-top:28px}
+.buy-row > *{min-width:0}
+/* salla-quantity-input in the design's .qty frame */
+.qty salla-quantity-input,.qty .s-quantity-input{display:flex;align-items:center;border:0;background:none;height:100%}
+.qty .s-quantity-input-container{display:flex;align-items:center;border:0;background:none;box-shadow:none;border-radius:0;padding:0;height:100%;width:auto}
+.qty .s-quantity-input-button{width:46px;height:100%;display:grid;place-items:center;background:none;border:0;color:var(--ink-2);border-radius:999px}
+.qty .s-quantity-input-button:hover{color:var(--green-700);background:none}
+.qty .s-quantity-input-input{width:38px;text-align:center;font:600 16px var(--font-head);color:var(--ink);border:0;background:none;padding:0;box-shadow:none}
+.qty .s-quantity-input-input:focus{box-shadow:none}
+.buy-row salla-add-product-button{flex:1;display:block}
+.buy-row salla-add-product-button .s-button-btn,.buy-row salla-add-product-button button{width:100%;height:58px;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:0 32px;border-radius:999px;font:600 16px/1.2 var(--font-head);border:1.5px solid var(--green-700);background:var(--green-700);color:#fff;transition:transform .2s var(--ease),background .2s,box-shadow .2s;opacity:1}
+.buy-row salla-add-product-button .s-button-btn:hover{transform:translateY(-1px);box-shadow:var(--shadow);background:var(--green-800)}
+.buy-row salla-add-product-button .s-button-text{display:inline-flex;align-items:center;gap:10px;overflow:visible}
+.buy-row salla-add-product-button .s-button-btn:disabled,.buy-row salla-add-product-button .s-button-disabled{background:var(--line);border-color:var(--line);color:var(--muted)}
+.buy-row .qty{height:58px}
+.pdp-wish{width:58px!important;height:58px!important;flex:none}
+.pdp-wish.on{color:var(--danger);--btn-fg:var(--danger);--btn-bd:var(--danger)}
+.pdp-wish.on .i{fill:currentColor}
+.buy-now{margin-top:16px}
+.buy-now:disabled{opacity:.7}
+.pdp salla-gifting{display:block}
+.installment{display:block;margin-top:16px}
+.quick-order{display:block;margin-top:16px}
+
+.perks{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}
+.perk{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:13px;line-height:1.45}
+.perk .i{color:var(--green-700)}
+.perk b{display:block;font-size:13.5px}
+@media (max-width:420px){
+  .buy-row{gap:8px}
+  .buy-row salla-add-product-button .s-button-btn{padding:0 12px;font-size:14.5px}
+  .qty .s-quantity-input-button{width:36px}
+  .qty .s-quantity-input-input{width:30px}
+  .pdp-wish{width:48px!important}
+}
+
+/* ============ التبويبات ============ */
+.az-tabs.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:28px;overflow-x:auto;scrollbar-width:none;padding:0;white-space:nowrap;text-align:start;margin-inline:0}
+.az-tabs button{padding:14px 18px!important;font-family:var(--font-head);font-weight:500;color:var(--muted);border-bottom:3px solid transparent!important;margin-bottom:-1px;white-space:nowrap}
+.az-tabs button[hidden]{display:none}
+.az-tabs button.active{color:var(--green-700);border-color:var(--green-700)!important;font-weight:600}
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.prose{color:var(--ink-2);font-size:16px;max-width:760px;line-height:1.8}
+.prose > * + *{margin-top:14px}
+.prose h2{font-size:24px;margin-top:36px;margin-bottom:12px;color:var(--ink)}
+.prose h3{font-size:20px;margin-top:28px;color:var(--ink)}
+.prose h3.ship-h{margin-top:0}
+.prose ul{display:grid;gap:8px;margin-top:10px;list-style:none;padding:0}
+.prose ul li{position:relative;padding-inline-start:22px}
+.prose ul li::before{content:"";position:absolute;inset-inline-start:0;top:.7em;width:8px;height:8px;border-radius:2px;background:var(--lime);transform:rotate(45deg)}
+.prose ol{list-style:decimal;padding-inline-start:22px}
+.prose img{max-width:100%;height:auto;border-radius:var(--r)}
+.prose a{color:var(--green-700);font-weight:600}
+.prose table{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--r);overflow:hidden;border:1px solid var(--line)}
+.prose th,.prose td{padding:14px 18px;text-align:start;border-bottom:1px solid var(--line-2);font-size:15px}
+.prose th{width:38%;background:var(--green-50);font-weight:600;color:var(--ink-2)}
+/* Salla's custom fields as the design's spec table */
+#t-specs salla-metadata{display:block;max-width:760px}
+#t-specs .s-metadata-wrapper,#t-specs .s-metadata-container{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+/* Salla's reviews block on the design's cards */
+#t-reviews .s-comments-product,#t-reviews .s-comments-container{max-width:none;padding:0;background:none}
+#t-reviews .s-comments-item{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;margin-top:14px}
+#t-reviews .s-comments-item-user-info-name{font-family:var(--font-head)}
+#t-reviews .s-rating-stars-selected,#t-reviews .s-rating-stars-selected svg{color:#F4B400;fill:#F4B400}
+#t-reviews .s-comment-form-input{border:1.5px solid var(--line);border-radius:12px}
+#t-reviews .s-comment-form-input:focus{border-color:var(--green-700);box-shadow:0 0 0 4px rgba(1,77,60,.08)}
+.pdp-tabs-sec{padding-bottom:clamp(40px,5vw,64px)}
+
+/* ============ الشريط السفلي (جوال) ============ */
+.sticky-buy{display:none}
+@media (max-width:960px){
+  .pdp{grid-template-columns:1fr}
+  .gallery{position:static;grid-template-columns:1fr}
+  .thumbs{grid-template-columns:repeat(5,1fr);order:2}
+  .perks{grid-template-columns:1fr}
+  .sticky-buy{display:flex;position:fixed;bottom:0;inset-inline:0;z-index:45;background:#fff;border-top:1px solid var(--line);padding:12px 16px;gap:12px;align-items:center;box-shadow:0 -10px 30px -12px rgba(1,40,30,.2);transform:translateY(110%);transition:transform .3s var(--ease)}
+  .sticky-buy.show{transform:none}
+  .sticky-buy .price{font-size:20px}
+  .sticky-buy .btn{flex:1;height:48px}
+}

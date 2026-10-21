@@ -1,0 +1,51 @@
+{#
+  AZEL — the two big product cards («راحة وحماية وضمان حقيقي»).
+  Registered in twilight.json as `home.azel-features` («عازل — المنتجات الرئيسية»).
+
+  component.eyebrow, title, link_text / link_url  — the section head
+  component.cards[] — .image, .badge, .chip, .title, .text,
+                      .spec1_value/_label … .spec3_value/_label,
+                      .price (number, printed with the store currency), .unit,
+                      .btn_text, .url
+#}
+<section class="section az">
+    <div class="container">
+        {% if component.eyebrow or component.title or component.link_text %}
+        <div class="section-head">
+            <div>
+                {% if component.eyebrow %}<span class="eyebrow">{{ component.eyebrow }}</span>{% endif %}
+                {% if component.title %}<h2 class="section-title">{{ component.title }}</h2>{% endif %}
+            </div>
+            {% if component.link_text %}<a href="{{ component.link_url|default('#') }}" class="link">{{ component.link_text }} {% include 'pages.partials.azel.icon' with { i: 'arrowL', c: 'i-sm i-flip' } %}</a>{% endif %}
+        </div>
+        {% endif %}
+        <div class="feature-grid">
+            {% for c in component.cards %}
+            <article class="feature-card reveal">
+                {% if c.badge %}<span class="badge">{{ c.badge }}</span>{% endif %}
+                <a href="{{ c.url|default('#') }}" class="feature-media">
+                    {% if c.image %}<img src="{{ c.image }}" alt="{{ c.title }}" loading="lazy">{% endif %}
+                </a>
+                <div class="feature-body">
+                    <div>
+                        {% if c.chip %}<span class="chip">{{ c.chip }}</span>{% endif %}
+                        {% if c.title %}<h3><a href="{{ c.url|default('#') }}">{{ c.title }}</a></h3>{% endif %}
+                    </div>
+                    {% if c.text %}<p class="lead">{{ c.text }}</p>{% endif %}
+                    {% if c.spec1_value or c.spec2_value or c.spec3_value %}
+                    <div class="spec-list">
+                        {% if c.spec1_value %}<div class="spec"><b>{{ c.spec1_value }}</b><span>{{ c.spec1_label }}</span></div>{% endif %}
+                        {% if c.spec2_value %}<div class="spec"><b>{{ c.spec2_value }}</b><span>{{ c.spec2_label }}</span></div>{% endif %}
+                        {% if c.spec3_value %}<div class="spec"><b>{{ c.spec3_value }}</b><span>{{ c.spec3_label }}</span></div>{% endif %}
+                    </div>
+                    {% endif %}
+                    <div class="feature-foot">
+                        {% if c.price %}<span class="price">{{ c.price|money }}{% if c.unit %} <small>{{ c.unit }}</small>{% endif %}</span>{% endif %}
+                        {% if c.btn_text %}<a href="{{ c.url|default('#') }}" class="btn">{{ c.btn_text }}</a>{% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>

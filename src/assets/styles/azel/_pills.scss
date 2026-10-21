@@ -1,0 +1,10 @@
+/* AZEL — the design's pill tabs (home showcase, category page, install centers) */
+.cat-pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:8px 16px;border-radius:999px;border:1.5px solid var(--line)!important;background:#fff!important;font-size:14px;font-weight:500;transition:.2s}
+.pill:hover{border-color:var(--green-200)!important}
+.pill.active{background:var(--green-700)!important;border-color:var(--green-700)!important;color:#fff}
+.showcase-tabs{justify-content:center;margin-bottom:28px}
+a.pill{display:inline-flex;align-items:center;gap:8px;color:var(--ink)}
+a.pill.active{color:#fff}
+.on-dark .pill{background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.14)!important;color:#fff}
+.on-dark .pill.active{background:var(--lime)!important;border-color:var(--lime)!important;color:var(--green-900)}

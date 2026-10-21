@@ -1,0 +1,24 @@
+{#
+  AZEL — the green call-to-action band («فعّل ضمانك الحقيقي لمدة 5 سنوات»).
+  Registered in twilight.json as `home.azel-cta` («عازل — شريط الدعوة»).
+
+  component.eyebrow, title, text
+  component.btn1_text / btn1_url (lime), btn2_text / btn2_url (ghost)
+#}
+<section class="section az">
+    <div class="container">
+        <div class="cta-band reveal">
+            <div>
+                {% if component.eyebrow %}<span class="eyebrow">{{ component.eyebrow }}</span>{% endif %}
+                {% if component.title %}<h2>{{ component.title }}</h2>{% endif %}
+                {% if component.text %}<p>{{ component.text }}</p>{% endif %}
+            </div>
+            {% if component.btn1_text or component.btn2_text %}
+            <div class="cta-actions">
+                {% if component.btn1_text %}<a href="{{ component.btn1_url|default('#') }}" class="btn btn-lime btn-lg"{% if component.btn1_url starts with 'http' and not (component.btn1_url starts with store.url) %} target="_blank" rel="noopener"{% endif %}>{{ component.btn1_text }}</a>{% endif %}
+                {% if component.btn2_text %}<a href="{{ component.btn2_url|default('#') }}" class="btn btn-ghost-light btn-lg"{% if component.btn2_url starts with 'http' and not (component.btn2_url starts with store.url) %} target="_blank" rel="noopener"{% endif %}>{{ component.btn2_text }}</a>{% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>

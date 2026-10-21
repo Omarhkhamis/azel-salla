@@ -1,0 +1,233 @@
+{# ############## Shared Variables in all views ################
+| Variable                                           | Type     | Description                                                                                              |
+|----------------------------------------------------|----------|----------------------------------------------------------------------------------------------------------|
+| store                                              | Store    |                                                                                                          |
+| store.id                                           | int      |                                                                                                          |
+| store.name                                         | string   |                                                                                                          |
+| store.username                                     | string   |                                                                                                          |
+| store.description                                  | string   |                                                                                                          |
+| store.slogan                                       | ?string  | * if feature in twilight.json                                                                            |
+| store.logo                                         | string   |                                                                                                          |
+| store.url                                          | string   |                                                                                                          |
+| store.api                                          | string   | the api url for current store                                                                            |
+| store.icon                                         | string   | *fav icon url                                                                                            |
+| store.contacts                                     | object   | [mobile, phone, email, whatsapp, telegram], ex. store.contacts.email                                     |
+| store.social                                       | object   | [instagram, snapchat, twitter, youtube, facebook, pinterest, maroof, whatsapp], ex. store.social.twitter |
+| store.settings                                     | object   |                                                                                                          |
+| store.settings.auth.email_allowed                  | bool     |                                                                                                          |
+| store.settings.auth.mobile_allowed                 | bool     |                                                                                                          |
+| store.settings.auth.is_email_required              | bool     |                                                                                                          |
+| store.settings.cart.apply_coupon_enabled           | bool     | Does visitor allowed to applay coupon in cart page                                                       |
+| store.settings.product.total_sold_enabled          | bool     |                                                                                                          |
+| store.settings.product.fit_type                    | ?string  | null when equal product card size is off, or ['cover', 'contain']                                        |
+| store.settings.category.testimonial_enabled        | bool     | Show random testimonials in category page                                                                |
+| store.settings.tax.number                          | ?string  |                                                                                                          |
+| store.settings.tax.certificate                     | ?string  | certificate image url                                                                                    |
+| store.settings.tax.taxable_prices_enabled          | bool     | Does tax included in the prices ex product_price 100 & tax is 15, price will be 115                      |
+| store.settings.rating_enabled                      | bool     | Is one of: store_enabled or shipping_enabled or products_enabled                                         |
+| store.settings.arabic_numbers_enabled              | bool     | Does the merchant wants the numbers to be shown as Arabic format                                         |
+| store.settings.is_multilingual                     | bool     |                                                                                                          |
+| store.settings.currencies_enabled                  | bool     |     
+| theme                                              | Theme    |                                                                                                          |
+| theme.id                                           | int      |                                                                                                          |
+| theme.name                                         | string   |                                                                                                          |
+| theme.mode                                         | string   | `live`, `preview`                                                                                        |
+| theme.is_rtl                                       | bool     |                                                                                                          |
+| theme.translations_hash                            | int      | to be used in case merchant updated frontend store translations                                          |
+| theme.color                                        | object   |                                                                                                          |
+| theme.color.primary                                | string   |                                                                                                          |
+| theme.color.text                                   | string   | suitable text color comparing to `theme.primary.color`, #000000, #FFFFFF                                 |
+| theme.color.reverse_primary                        | string   |                                                                                                          |
+| theme.color.reverse_text                           | string   | if `theme.text_color=#000000` means that `theme.reverse_text_color=#FFFFFF`                              |
+| theme.color.is_dark                                | bool     | Does main store color `theme.primary.color` considered as dim color?                                     |
+| theme.color.darker(float alpha, ?string hexColor)  | string   | get darker color from `theme.primary.color` or from passed color, `alpha` range from 0.0-1.0             |
+| theme.color.lighter(float alpha, ?string hexColor) | string   | get lighter color from `theme.primary.color` or from passed color, `alpha` range from 0.0-1.0            |
+| theme.font                                         | ?object  | Salla predefined font, null when the theme doesn't have `fonts` feature                                  |
+| theme.font.name                                    | string   | DINNextLTArabic-Regular, Amazon-Ember, Apple, Dubai, Estedad                                             |
+| theme.font.url                                     | string   | css full url ex: 'https://my_store.test/dist/fonts/default.css'                                          |
+| theme.settings                                     | object   | dynamic object with values of the `settings` in twilight.json ex. `theme.settings.topnav_is_dark`        |
+| theme.settings.set(settingName, value)             | string   | set global var, then get it {{theme.settings.get('my_var','fallback') }}                                 |
+| theme.settings.get(settingName, default=null)      | mixed    | get theme setting ex `theme.settings.get('my_var', 'fallback')`                                          |
+#}
+{# ---- Tint grades (درجات التظليل) ----
+   One source for the hero's grade picker and the product page's zone /
+   grade pickers. Theme settings, three fixed grades as in the design; the JS
+   reads them from data-grades on <html> (escaped JSON, never inline script). #}
+{# Written out per grade, not in a loop: every setting name must appear
+   literally for Salla's editor and review tools. #}
+{% set azel_grades = [] %}
+{% set g_code = theme.settings.get('grade1_code', '00')|trim %}
+{% if g_code %}{% set azel_grades = azel_grades|merge([{
+    id: g_code, label: g_code,
+    name: theme.settings.get('grade1_name', 'خفيف العتمة'),
+    short: theme.settings.get('grade1_short', 'خفيف · مطابق للمرور'),
+    desc: theme.settings.get('grade1_desc', 'تظليل خفيف مع رؤية واضحة وراحة أكبر أثناء القيادة — مطابق لأنظمة المرور'),
+    alpha: theme.settings.get('grade1_shade', 28) / 100,
+    heat: theme.settings.get('grade1_heat', 65),
+    uv: theme.settings.get('grade1_uv', 99),
+    privacy: theme.settings.get('grade1_privacy', 35)
+}]) %}{% endif %}
+{% set g_code = theme.settings.get('grade2_code', '01')|trim %}
+{% if g_code %}{% set azel_grades = azel_grades|merge([{
+    id: g_code, label: g_code,
+    name: theme.settings.get('grade2_name', 'متوسط العتمة'),
+    short: theme.settings.get('grade2_short', 'متوسط العتمة'),
+    desc: theme.settings.get('grade2_desc', 'تظليل متوسط يجمع بين الخصوصية والرؤية المريحة'),
+    alpha: theme.settings.get('grade2_shade', 55) / 100,
+    heat: theme.settings.get('grade2_heat', 76),
+    uv: theme.settings.get('grade2_uv', 99),
+    privacy: theme.settings.get('grade2_privacy', 65)
+}]) %}{% endif %}
+{% set g_code = theme.settings.get('grade3_code', '02')|trim %}
+{% if g_code %}{% set azel_grades = azel_grades|merge([{
+    id: g_code, label: g_code,
+    name: theme.settings.get('grade3_name', 'تعتيم كامل'),
+    short: theme.settings.get('grade3_short', 'تعتيم كامل'),
+    desc: theme.settings.get('grade3_desc', 'تظليل داكن يوفر أعلى مستوى من الخصوصية وتقليل الوهج'),
+    alpha: theme.settings.get('grade3_shade', 82) / 100,
+    heat: theme.settings.get('grade3_heat', 94),
+    uv: theme.settings.get('grade3_uv', 99),
+    privacy: theme.settings.get('grade3_privacy', 100)
+}]) %}{% endif %}
+<!DOCTYPE html>
+<html lang="{{ language.code }}" dir="{{ theme.is_rtl ? 'rtl' : 'ltr' }}"
+      data-add-to-cart="{{ trans('azel.common.add_to_cart') }}"
+      data-choose-options="{{ trans('azel.common.choose_options') }}"
+      data-out-of-stock="{{ trans('azel.common.sold_out') }}"
+      data-discount-label="{{ trans('azel.common.discount') }}"
+      data-wishlist="{{ trans('azel.common.wishlist') }}"
+      data-added="{{ trans('azel.cart.added') }}"
+      data-view-cart="{{ trans('azel.cart.view') }}"
+      data-copied="{{ trans('azel.common.copied') }}"
+      data-card-fit="{{ theme.settings.get('card_image_fit', 'contain') is iterable ? theme.settings.get('card_image_fit')|first : theme.settings.get('card_image_fit', 'contain') }}"
+      data-card-rating="{{ theme.settings.get('card_show_rating', true) and store.settings.rating_enabled ? '1' : '0' }}"
+      data-grades="{{ azel_grades|json_encode }}"
+      data-hide-sold-out="{{ theme.settings.get('hide_sold_out', true) ? '1' : '0' }}">
+<!-- بسم الله الرحمن الرحيم -->
+<!--
+    تطوير : Omar Haj Khamis
+    الشركة : Brief-Dev
+    الجوال : +32465660978
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{ theme.settings.set('placeholder', 'images/placeholder.png') }}
+
+    <script defer data-cfasync="false" crossorigin="anonymous" src="{{ 'product-card.js'|asset }}"></script>
+
+    {% block head_scripts %}{% endblock %}
+
+    <script data-cfasync="false">
+        window.can_access_wallet = {{ user.can_access_wallet | json_encode }}
+        {# The cart drawer + the Azel toast (azel.js) replace Salla's stock
+           add-to-cart popup. Raed's own notifier reads this flag before
+           azel.js takes over from it. #}
+        window.enable_add_product_toast = true
+        {# Both are read as bare globals by the inherited base — app.js and
+           product.js — so removing them throws a ReferenceError that stops the
+           whole bundle. The Azel header does its own sticky handling, and the
+           zoom hooks Raed's .image-slider markup, which Azel never renders. #}
+        window.header_is_sticky = false
+        window.imageZoom = false
+    </script>
+
+    {% hook 'head:start' %}
+    {% hook head %}
+    {% block styles %}{% endblock %}
+    {# The design's two faces: Alexandria for headings, IBM Plex Sans Arabic
+       for text. Preconnect first so the font request is not queued behind the
+       stylesheet. #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+
+    <link rel="stylesheet" href="{{ 'app.css' | asset }}">
+    <link rel="stylesheet" href="{{ 'fonts/sallaicons.css'|cdn }}"/>
+    {# Azel global chrome: header, footer, drawers, product card — every page #}
+    <link rel="stylesheet" href="{{ 'azel.css' | asset }}">
+    {% block styles_after %}{% endblock %}
+
+    {# The identity colours default to the design (01-settings/global.scss).
+       A colour is re-declared here only when the merchant set one AND it is a
+       plain hex value: the value lands inside <style>, where HTML escaping
+       does not apply, so anything that is not #rgb / #rrggbb is dropped.
+       The check strips every hex character; whatever remains means the value
+       is not a colour. #}
+    {% set hex_strip = {'#':'','0':'','1':'','2':'','3':'','4':'','5':'','6':'','7':'','8':'','9':'','a':'','b':'','c':'','d':'','e':'','f':''} %}
+    {% set palette = {
+        '--green-700': theme.settings.get('color_green'),
+        '--green-900': theme.settings.get('color_green_dark'),
+        '--green-950': theme.settings.get('color_green_darkest'),
+        '--lime':      theme.settings.get('color_lime')
+    } %}
+    <style>:root{
+        {%- for name, value in palette -%}
+            {%- set v = value|default('')|trim|lower -%}
+            {%- if v starts with '#' and (v|length == 4 or v|length == 7) and v|replace(hex_strip) == '' -%}
+                {{ name }}:{{ v }};
+            {%- endif -%}
+        {%- endfor -%}
+    }</style>
+    {# tracking services, custom css feature. #}
+    {% hook 'head:end' %}
+</head>
+<body id="app" class="theme-raed azel overflow-x-hidden {% hook 'body:classes' %}">
+<noscript>
+    To get full functionality of this site you need to enable JavaScript. Here is how
+    <a href="https://www.enable-javascript.com/" rel="noreferrer"
+       target="_blank">To enable JavaScript on webpage</a>.
+</noscript>
+{# Without scripts the scroll-reveal never runs: the content must not stay hidden #}
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+
+<div class="app-inner flex flex-col min-h-full">
+    {% hook 'body:start' %}
+    {% block header %}{% component 'header.header' %}{% endblock %}
+    <main id="main-content" role="main">
+    {% block content %}{% endblock %}
+    </main>
+    {% block footer %}{% component 'footer.footer' %}{% endblock %}
+</div>
+{% hook 'body:end' %}
+
+{# زر واتساب العائم — إظهاره ورقمه من إعدادات التصميم؛ وبلا رقم في الإعداد
+   يُستعمل رقم واتساب المسجّل في بيانات المتجر بلوحة سلة. #}
+{% set wa_float = theme.settings.get('whatsapp_number')|default(store.contacts.whatsapp)|default('')|replace({' ': '', '+': '', '-': '', '(': '', ')': ''}) %}
+{% if theme.settings.get('whatsapp_enabled', true) and wa_float %}
+    {# أنماطه هنا لا في azel.css: نسخة الـCDN المخبّأة من الملف قد تسبق الزر
+       فيظهر الشعار بعرض الشاشة كاملة أسفل الصفحة #}
+    <style>
+    .wa-float{position:fixed;bottom:20px;left:20px;z-index:40;width:58px;height:58px;border-radius:50%;background:#25D366;color:#fff;display:grid;place-items:center;box-shadow:0 12px 30px -8px rgba(37,211,102,.6);transition:transform .2s}
+    .wa-float:hover{transform:scale(1.06);color:#fff}
+    .wa-float svg{width:28px;height:28px;display:block}
+    [dir=ltr] .wa-float{left:auto;right:20px}
+    @media (prefers-reduced-motion:reduce){.wa-float{transition:none}.wa-float:hover{transform:none}}
+    </style>
+    <a class="wa-float" href="https://wa.me/{{ wa_float }}" target="_blank" rel="noopener noreferrer"
+       aria-label="{{ trans('azel.common.whatsapp_cta') }}" title="{{ trans('azel.common.whatsapp_cta') }}">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3.5 20.5 5 16a8.5 8.5 0 1 1 3.2 3.1L3.5 20.5Z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .9a5 5 0 0 1-2.8-2.8l.9-1-1-2L9 8.5Z"/></svg>
+    </a>
+{% endif %}
+
+{# Salla's own add-to-cart toast, as in Raed — dressed as the design's .toast
+   in azel-chrome.scss. The Azel toast (azel.js) covers everything else. #}
+<salla-add-product-toast></salla-add-product-toast>
+<div id="toasts" class="toast-wrap az" aria-live="polite"></div>
+<script defer crossorigin="anonymous" src="{{ 'app.js' | asset }}"></script>
+{# Azel chrome interactions (menu, cart drawer, search, toasts) on every page #}
+<script defer src="{{ 'azel.js' | asset }}"></script>
+
+{# Twilight Components #}
+<salla-offer-modal></salla-offer-modal>
+{# Required by Salla and used by apps that dispatch `search::open`; the Azel
+   search panel (header.twig) is what the header's own button opens. #}
+<salla-search></salla-search>
+<salla-login-modal></salla-login-modal>
+{% if store.scope %}
+    <salla-scopes selection="{{ store.scope.display_as == 'popup' ? 'mandatory' : 'optional' }}"></salla-scopes>
+{% endif %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

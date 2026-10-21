@@ -1,0 +1,139 @@
+{#
+  AZEL — global footer, rendered on every page from layouts/master.twig.
+  Markup and classes are the static design's (renderFooter): .site-footer,
+  .footer-top (brand + two link columns + customer service), .footer-bottom.
+
+  Content sources:
+    footer_logo         — the white logo on the dark green (default: the store
+                          logo turned white with a CSS filter)
+    footer_desc         — the paragraph under it (default: store description)
+    footer_colN_title/_links — the two link columns, "النص | الرابط" per line.
+                          Salla's footer menu is one flat list, so it cannot
+                          carry two titled columns.
+    contacts / social   — the store's own (Salla dashboard) + TikTok setting
+    pay_*               — the design's payment icons, each switchable
+  The commercial register, the business-platform certificate and the tax
+  number come from the store settings, as Salla's review requires, and have
+  no setting to hide them.
+#}
+{% set store_name = store.name|default(trans('azel.common.store')) %}
+{% set wa = theme.settings.get('whatsapp_number')|default(store.contacts.whatsapp)|default('')|replace({' ': '', '+': '', '-': '', '(': '', ')': ''}) %}
+{% set phone = store.contacts.mobile|default(store.contacts.phone)|default('')|replace({' ': ''}) %}
+{% set phone_display = theme.settings.get('phone_display')|default(phone) %}
+{% set email = store.contacts.email %}
+{% set tiktok = theme.settings.get('social_tiktok')|default(store.social.tiktok) %}
+{% set flogo = theme.settings.get('footer_logo') %}
+
+<footer class="site-footer az">
+    <div class="container footer-top">
+        <div class="footer-brand">
+            <a href="{{ store.url }}" aria-label="{{ store_name }}">
+                {% if flogo %}
+                    <img src="{{ flogo }}" alt="{{ store_name }}" width="250" height="91" loading="lazy">
+                {% elseif store.logo %}
+                    <img class="to-white" src="{{ store.logo }}" alt="{{ store_name }}" width="250" height="91" loading="lazy">
+                {% else %}
+                    <span class="logo-text">{{ store_name }}</span>
+                {% endif %}
+            </a>
+            {% set desc = theme.settings.get('footer_desc')|default(store.description) %}
+            {% if desc %}<p>{{ desc }}</p>{% endif %}
+            <div class="socials">
+                {% if store.social.instagram %}<a href="{{ store.social.instagram }}" target="_blank" rel="noopener" aria-label="{{ trans('azel.footer.instagram') }}">{% include 'pages.partials.azel.icon' with { i: 'insta', c: 'i-sm' } %}</a>{% endif %}
+                {% if tiktok %}<a href="{{ tiktok }}" target="_blank" rel="noopener" aria-label="{{ trans('azel.footer.tiktok') }}">{% include 'pages.partials.azel.icon' with { i: 'tiktok', c: 'i-sm' } %}</a>{% endif %}
+                {% if wa %}<a href="https://wa.me/{{ wa }}" target="_blank" rel="noopener" aria-label="{{ trans('azel.footer.whatsapp') }}">{% include 'pages.partials.azel.icon' with { i: 'wa', c: 'i-sm' } %}</a>{% endif %}
+                {% if store.social.snapchat %}<a href="{{ store.social.snapchat }}" target="_blank" rel="noopener" aria-label="{{ trans('azel.footer.snapchat') }}"><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 0 5 2.2 5 5.2v2.6l1.8-.6.6 1.2-2.2 1.3c.7 1.9 2 3.1 3.8 3.6l-.3 1.2-2.3.4-.5 1.6-2.3-.2c-1 .9-2.4 1.7-3.6 1.7s-2.6-.8-3.6-1.7l-2.3.2-.5-1.6-2.3-.4-.3-1.2c1.8-.5 3.1-1.7 3.8-3.6L4.6 12l.6-1.2 1.8.6V8.7c0-3 2-5.2 5-5.2z"/></svg></a>{% endif %}
+                {% if store.social.twitter %}<a href="{{ store.social.twitter }}" target="_blank" rel="noopener" aria-label="X"><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16M20 4L4 20"/></svg></a>{% endif %}
+                {% if store.social.youtube %}<a href="{{ store.social.youtube }}" target="_blank" rel="noopener" aria-label="{{ trans('azel.footer.youtube') }}"><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.2v5.6l4.8-2.8z"/></svg></a>{% endif %}
+                {% if store.social.facebook %}<a href="{{ store.social.facebook }}" target="_blank" rel="noopener" aria-label="{{ trans('azel.footer.facebook') }}"><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 8H17V4.5h-2.5A4 4 0 0 0 10.5 8.5V11H8v3.5h2.5V21H14v-6.5h2.6L17 11h-3V8.9c0-.5.4-.9.9-.9z"/></svg></a>{% endif %}
+            </div>
+        </div>
+
+        {# الأعمدة مكتوبة صراحةً لا عبر حلقة: اسم الإعداد يجب أن يظهر حرفياً
+           ليراه محرر سلة وأدوات المراجعة #}
+        {% set col1_title = theme.settings.get('footer_col1_title') %}
+        {% set col1_links = theme.settings.get('footer_col1_links', '') %}
+        {% if col1_title or col1_links|trim %}
+        <div>
+            {% if col1_title %}<h4>{{ col1_title }}</h4>{% endif %}
+            <div class="footer-links">
+                {% for line in col1_links|replace({"\r": ""})|split("\n") %}
+                    {% set parts = line|split('|') %}
+                    {% set label = parts[0]|default('')|trim %}
+                    {% set url = parts[1]|default('#')|trim %}
+                    {% if label %}<a href="{{ url }}"{% if url starts with 'http' and not (url starts with store.url) %} target="_blank" rel="noopener"{% endif %}>{{ label }}</a>{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% set col2_title = theme.settings.get('footer_col2_title') %}
+        {% set col2_links = theme.settings.get('footer_col2_links', '') %}
+        {% if col2_title or col2_links|trim %}
+        <div>
+            {% if col2_title %}<h4>{{ col2_title }}</h4>{% endif %}
+            <div class="footer-links">
+                {% for line in col2_links|replace({"\r": ""})|split("\n") %}
+                    {% set parts = line|split('|') %}
+                    {% set label = parts[0]|default('')|trim %}
+                    {% set url = parts[1]|default('#')|trim %}
+                    {% if label %}<a href="{{ url }}"{% if url starts with 'http' and not (url starts with store.url) %} target="_blank" rel="noopener"{% endif %}>{{ label }}</a>{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if wa or phone or email %}
+        <div class="footer-contact-col">
+            <h4>{{ theme.settings.get('footer_contact_title')|default(trans('azel.footer.customer_service')) }}</h4>
+            <div class="footer-contact">
+                {% if wa %}<a href="https://wa.me/{{ wa }}" target="_blank" rel="noopener"><span class="ico">{% include 'pages.partials.azel.icon' with { i: 'wa', c: 'i-sm' } %}</span><span>{{ trans('azel.footer.whatsapp') }}<br><span class="ltr">{{ phone_display|default(wa) }}</span></span></a>{% endif %}
+                {% if phone %}<a href="tel:{{ phone }}"><span class="ico">{% include 'pages.partials.azel.icon' with { i: 'phone', c: 'i-sm' } %}</span><span>{{ trans('azel.footer.call') }}<br><span class="ltr">{{ phone_display }}</span></span></a>{% endif %}
+                {% if email %}<a href="mailto:{{ email }}"><span class="ico">{% include 'pages.partials.azel.icon' with { i: 'mail', c: 'i-sm' } %}</span><span>{{ email }}</span></a>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {# السجل التجاري / وثيقة العمل الحر ووثائق المتجر — مكوّن سلة، يظهر دائماً
+       متى توفّرت البيانات وبلا أي إعداد لإخفائه. #}
+    <div class="container footer-docs">
+        <salla-trust-badges dark></salla-trust-badges>
+
+        {# certificate is an object on live stores ({"id": "…"}); printing it
+           whole throws "Array to string conversion" and Salla then drops the
+           entire footer. #}
+        {% set certificate = store.settings.certificate %}
+        {% set certificate = certificate is iterable ? certificate.id|default('') : certificate %}
+        {% if certificate %}
+            <div class="f-badge">
+                <img src="{{ 'images/business-platform.png'|asset }}" width="40" height="38" alt="{{ trans('azel.footer.business_platform') }}" loading="lazy">
+                <div>
+                    <p>{{ trans('azel.footer.business_platform') }}</p>
+                    <b><bdi>{{ certificate }}</bdi></b>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if store.settings.tax.number %}
+            <span>{{ trans('common.elements.tax_number') }}: <b><bdi>{{ store.settings.tax.number }}</bdi></b></span>
+        {% endif %}
+
+        {% if store.social.maroof %}
+            <a href="{{ store.social.maroof }}" target="_blank" rel="noopener">{{ trans('azel.footer.maroof') }}</a>
+        {% endif %}
+    </div>
+
+    <div class="container footer-bottom">
+        <span>© {{ "now"|date("Y") }} {{ theme.settings.get('footer_copyright')|default(store_name ~ trans('azel.footer.rights')) }}</span>
+        <div class="pay" aria-label="{{ trans('azel.footer.payment_methods') }}">
+            {% if theme.settings.get('pay_mada', true) %}<span class="pay-ico" title="مدى"><img src="{{ 'images/pay/mada.png'|asset }}" alt="مدى" loading="lazy"></span>{% endif %}
+            {% if theme.settings.get('pay_card', true) %}<span class="pay-ico" title="Visa / Mastercard"><img src="{{ 'images/pay/credit_card.png'|asset }}" alt="Visa / Mastercard" loading="lazy"></span>{% endif %}
+            {% if theme.settings.get('pay_applepay', true) %}<span class="pay-ico" title="Apple Pay"><img src="{{ 'images/pay/apple_pay.png'|asset }}" alt="Apple Pay" loading="lazy"></span>{% endif %}
+            {% if theme.settings.get('pay_stc', true) %}<span class="pay-ico" title="stc Bank"><img src="{{ 'images/pay/stc_pay.png'|asset }}" alt="stc Bank" loading="lazy"></span>{% endif %}
+            {% if theme.settings.get('pay_tabby', true) %}<span class="pay-ico" title="تابي"><img src="{{ 'images/pay/tabby_installment.png'|asset }}" alt="تابي" loading="lazy"></span>{% endif %}
+            {% if theme.settings.get('pay_tamara', true) %}<span class="pay-ico" title="تمارا"><img src="{{ 'images/pay/tamara_installment.png'|asset }}" alt="تمارا" loading="lazy"></span>{% endif %}
+            {% if theme.settings.get('pay_bank', true) %}<span class="pay-ico" title="تحويل بنكي"><img src="{{ 'images/pay/bank.png'|asset }}" alt="تحويل بنكي" loading="lazy"></span>{% endif %}
+        </div>
+    </div>
+</footer>

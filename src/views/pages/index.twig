@@ -1,0 +1,23 @@
+{#
+  AZEL — home page.
+  The header and footer render on every page from layouts/master.twig. This
+  page is only the ordered list of blocks the merchant arranged in the Design
+  Editor (components/home/azel-*.twig), plus the home-only bundle.
+#}
+{% extends "layouts.master" %}
+
+{% block styles_after %}
+    <link rel="stylesheet" href="{{ 'azel-home.css' | asset }}">
+{% endblock %}
+
+{% block content %}
+    {# أقسام الصفحة الرئيسية — كومبوننتات يتحكم بها التاجر من محرر التصميم #}
+    {% component home %}
+{% endblock %}
+
+{% block scripts %}
+    {# Raed base: drives the stock blocks that stay available through the
+       component-* features in twilight.json. #}
+    <script defer src="{{ 'home.js' | asset }}"></script>
+    <script defer src="{{ 'azel-home.js' | asset }}"></script>
+{% endblock %}

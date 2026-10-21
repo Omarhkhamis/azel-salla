@@ -1,0 +1,94 @@
+/* ============================================================================
+   AZEL PLUS (عازل بلس) — design tokens
+   ----------------------------------------------------------------------------
+   Every value in the identity block is lifted verbatim from the static design
+   (Azel+/assets/css/style.css, its :root). The names are kept exactly as the
+   design has them, so the CSS ported into azel-*.scss reads the same tokens.
+
+   Four of them (green-700, green-900, green-950, lime) can be overridden by
+   the merchant from the theme settings — master.twig re-declares them on
+   :root only when a setting holds a valid hex colour.
+   ============================================================================ */
+
+// Legacy aliases kept so the Raed base layers keep compiling.
+$main-color: var(--color-primary);
+$infinte-color: var(--infinte-color);
+$main-text-color: var(--main-text-color);
+
+:root {
+  /* ---- brand — from the design ---- */
+  --green-950: #001A14;
+  --green-900: #00261D;
+  --green-800: #013A2D;
+  --green-700: #014D3C; /* logo green */
+  --green-600: #0B6650;
+  --green-500: #1F806A;
+  --green-200: #BFD8CF;
+  --green-100: #E3EFEA;
+  --green-50:  #F2F7F5;
+
+  --lime:      #C8E115; /* brand lime */
+  --lime-600:  #A8BF0A;
+  --lime-200:  #E9F3A6;
+  --lime-100:  #F5FAD6;
+
+  /* ---- neutrals ---- */
+  --ink:    #0D1B16;
+  --ink-2:  #2B3A35;
+  --muted:  #61716B;
+  --line:   #E1E7E4;
+  --line-2: #EEF2F0;
+  --bg:     #F6F8F7;
+  --card:   #FFFFFF;
+
+  --danger: #D92D20;
+  --warn:   #E9A100;
+  --ok:     #12935F;
+
+  /* ---- type ---- */
+  --font-head: "Alexandria", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", system-ui, sans-serif;
+
+  /* ---- shape ---- */
+  --r-sm: 8px;
+  --r:    14px;
+  --r-lg: 22px;
+  --r-xl: 32px;
+
+  --shadow-sm: 0 1px 2px rgba(1, 40, 30, .06), 0 1px 1px rgba(1, 40, 30, .04);
+  --shadow:    0 8px 24px -8px rgba(1, 40, 30, .16), 0 2px 6px rgba(1, 40, 30, .05);
+  --shadow-lg: 0 30px 60px -24px rgba(1, 40, 30, .35);
+
+  --container: 1240px;
+  --gutter: 24px;
+  --header-h: 76px;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+
+  /* ---- Raed base bridge ------------------------------------------------
+     The inherited pages (cart, account, blog…) read these legacy names
+     directly and through @apply. Pointing them at the Azel set is what makes
+     them land on the green/lime identity instead of Raed's defaults. ------ */
+  --infinte-color: var(--green-200);
+  --main-text-color: var(--ink);
+  --main-text-color-dark: var(--ink);
+  --color-primary: var(--green-700);
+  --color-primary-d: var(--green-800);
+  --color-primary-l: var(--green-500);
+  --color-primary-dark: var(--green-800);
+  --color-primary-light: var(--green-500);
+  --color-primary-reverse: #FFFFFF;
+  --color-text: var(--muted);
+  --bg-gray: var(--bg);
+  --color-grey: var(--green-50);
+  --color-light-grey: var(--line);
+
+  --font-sm: 0.8685714286rem;
+  --font-main: 'IBM Plex Sans Arabic';
+
+  /* plugins */
+  --mm-ocd-width: calc(100% - 51px);
+}
+
+@media (max-width: 640px) {
+  :root { --gutter: 16px; --header-h: 64px; }
+}

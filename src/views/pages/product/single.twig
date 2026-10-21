@@ -1,0 +1,318 @@
+{# ############## Product page ##############
+  AZEL — design: Azel+/product.html.
+| Variable                    | Type      | Notes                                            |
+|-----------------------------|-----------|--------------------------------------------------|
+| product.id / name / subtitle| mixed     | subtitle is the short line under the title       |
+| product.description         | string    | html                                             |
+| product.url / sku           | string    |                                                  |
+| product.price               | number    | raw — |money adds the currency symbol            |
+| product.regular_price       | string    | shown struck through when is_on_sale             |
+| product.sale_price          | string    |                                                  |
+| product.image.url/.alt      | object    | the main image                                   |
+| product.images[]            | array     | .id .url .alt .type ('image'|'video')             |
+| product.max_quantity        | int       |                                                  |
+| product.rating.stars/.count | object    |                                                  |
+| product.is_on_sale / is_out_of_stock / has_options / promotion_title             |
+
+  Options are Salla's own <salla-product-options> (validation, variant
+  pricing, stock). azel-product.js reads what it rendered and draws the
+  design's pickers on top, driving Salla's real inputs:
+    - several options whose values are tint grades (00 / 01 / 02) → the
+      per-zone rows with the car diagram and «نفس الدرجة للكل» (#opt-zones)
+    - a single grade option → the swatch cards with the grade's description
+      (#opt-grade)
+  Every other option (the gift picker as thumbnails, colours, scents) stays
+  Salla's markup, dressed by azel-product.scss.
+
+  No {% component %} here: a product block without an instance is a
+  server-side fatal on Salla; the editable content comes from theme settings.
+
+  Contract with the inherited product.js: .product-form, .price-wrapper,
+  .total-price, .before-price, .out-of-stock, .product-sku.
+#}
+{% extends "layouts.master" %}
+
+{% block styles_after %}
+    <link rel="stylesheet" href="{{ 'azel-product.css' | asset }}">
+{% endblock %}
+
+{% block content %}
+{% set fit = theme.settings.get('product_image_fit', 'contain') %}
+{% set fit = fit is iterable ? fit|first : fit %}
+{% set images = [] %}
+{% for image in product.images|default([]) %}
+    {% if image.type|default('image') == 'image' %}{% set images = images|merge([image]) %}{% endif %}
+{% endfor %}
+{% set main_src = product.image.url|default(images[0].url is defined ? images[0].url : 'images/placeholder.png'|asset) %}
+
+<div class="container crumbs-bar az">
+    {% if theme.settings.get('product_show_breadcrumbs', true) %}
+        <nav class="crumbs" aria-label="{{ trans('azel.common.breadcrumbs') }}"><salla-breadcrumb></salla-breadcrumb></nav>
+    {% endif %}
+</div>
+
+<div class="container"><div class="s-blocks-wrapper s-before-product-info !mt-0">{% hook 'product.single.before_product_info' %}</div></div>
+
+<section class="container pdp az">
+    {# ---- المعرض ---- #}
+    <div class="gallery{{ images|length < 2 ? ' single' : '' }}">
+        {% if images|length > 1 %}
+        <div class="thumbs" id="thumbs">
+            {% for image in images %}
+                <button type="button" class="{{ loop.first ? 'active' : '' }}" data-src="{{ image.url }}" data-id="{{ image.id }}" aria-label="{{ trans('azel.common.image') }} {{ loop.index }}">
+                    <img src="{{ image.url|cdn(170,170) }}" alt="" loading="lazy">
+                </button>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="main-img{{ fit == 'cover' ? '' : ' contain' }}" id="main-img">
+            {% if product.promotion_title %}<span class="badge" data-promo>{{ product.promotion_title }}</span>{% endif %}
+            <img src="{{ main_src }}" alt="{{ product.image.alt|default(product.name) }}" id="main-photo" fetchpriority="high">
+        </div>
+    </div>
+
+    {# ---- المعلومات ---- #}
+    <div class="pdp-info">
+        {% if product.category.name is defined and product.category.name %}
+            <a class="chip" href="{{ product.category.url }}">{{ product.category.name }}</a>
+        {% elseif product.brand.name is defined and product.brand.name %}
+            <a class="chip" href="{{ product.brand.url }}">{{ product.brand.name }}</a>
+        {% endif %}
+        <h1>{{ product.name }}</h1>
+
+        <div class="pdp-meta">
+            {% if store.settings.rating_enabled and product.rating.count|default(0) > 0 %}
+                {% set stars = product.rating.stars|default(0)|round %}
+                <span class="pm-rate"><span class="stars">{% for i in 1..5 %}{% include 'pages.partials.azel.icon' with { i: 'star', c: i <= stars ? '' : 'off' } %}{% endfor %}</span><b class="num">{{ product.rating.stars|number_format(1) }}</b> <a href="#reviews" class="muted" data-open-tab="reviews">({{ product.rating.count }} {{ trans('azel.product.reviews_count') }})</a></span>
+                <span class="sep"></span>
+            {% endif %}
+            {% if product.is_out_of_stock %}
+                <span class="stock is-out">{{ trans('azel.common.sold_out') }}</span>
+            {% else %}
+                <span class="stock">{{ trans('azel.product.in_stock') }}</span>
+            {% endif %}
+            {% if product.sku %}
+                <span class="sep"></span>
+                <span>{{ trans('azel.product.sku') }}: <span class="ltr product-sku">{{ product.sku }}</span></span>
+            {% endif %}
+        </div>
+
+        {# Block tags become spaces before striptags, and the entities striptags
+           leaves behind are decoded so autoescape does not print «&nbsp;». #}
+        {% set plain = product.description|default('')|replace({
+            '</p>': ' ', '<br>': ' ', '<br/>': ' ', '<br />': ' ', '</div>': ' ', '</li>': ' ', '</h2>': ' ', '</h3>': ' ', '</h4>': ' '
+        })|striptags|replace({
+            '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&#39;': "'", '&lt;': '<', '&gt;': '>'
+        })|trim %}
+        {% set short = product.subtitle|default(plain|slice(0, 180)) %}
+        {% if short %}<p class="muted pdp-short">{{ short }}{{ not product.subtitle and plain|length > 180 ? '…' : '' }}</p>{% endif %}
+
+        {# data-regular/-sale feed the «وفّر» tag, computed in azel-product.js #}
+        <div class="pdp-price" data-regular="{{ product.regular_price }}" data-sale="{{ product.is_on_sale ? product.sale_price : '' }}"
+             data-save-label="{{ trans('azel.product.save') }}">
+            <span class="price price-wrapper">
+                <del class="before-price price_is_on_sale{{ product.is_on_sale ? '' : ' hidden' }}">{{ product.is_on_sale ? product.regular_price|money : '' }}</del>
+                <span class="total-price">{{ product.is_on_sale ? product.sale_price|money : (product.starting_price ? product.starting_price|money : product.price|money) }}</span>
+            </span>
+            <span class="save-tag" data-save hidden></span>
+        </div>
+        <div class="pdp-oos out-of-stock hidden">{{ trans('azel.common.sold_out') }}</div>
+
+        {% if theme.settings.get('bnpl_enabled', true) %}
+            <div class="bnpl" data-bnpl data-price="{{ product.is_on_sale ? product.sale_price : product.price }}" data-parts="4">
+                <span class="bnpl-logos">
+                    <span class="pay-ico"><img src="{{ 'images/pay/tabby_installment.png'|asset }}" alt="تابي" loading="lazy"></span>
+                    <span class="pay-ico"><img src="{{ 'images/pay/tamara_installment.png'|asset }}" alt="تمارا" loading="lazy"></span>
+                </span>
+                <span data-bnpl-text data-template="{{ trans('azel.product.bnpl') }}"></span>
+            </div>
+        {% endif %}
+
+        {# Conditional offers for this product — self-hides when there are none #}
+        <salla-conditional-offer></salla-conditional-offer>
+
+        {% hook 'product:single.description.start' %}
+
+        <form class="product-form" enctype="multipart/form-data" method="post"
+              onsubmit="return salla.form.onSubmit('cart.addItem', event)">
+            <input type="hidden" name="id" value="{{ product.id }}">
+
+            {% hook 'product:single.form.start' %}
+
+            {# ---- درجة التظليل لكل جهة (تُبنى من خيارات سلة) ---- #}
+            <div class="opt" id="opt-zones" hidden
+                 data-title="{{ theme.settings.get('zones_title')|default(trans('azel.product.zones_title')) }}"
+                 data-hint="{{ theme.settings.get('zones_hint')|default(trans('azel.product.zones_hint')) }}"
+                 data-unpicked="{{ trans('azel.product.unpicked') }}"
+                 data-picked="{{ trans('azel.product.picked_zone') }}">
+                <div class="opt-label">{{ theme.settings.get('zones_title')|default(trans('azel.product.zones_title')) }} <span>{{ theme.settings.get('zones_hint')|default(trans('azel.product.zones_hint')) }}</span></div>
+                <div class="zones">
+                    <div class="car-diagram" aria-hidden="true">
+                        <svg viewBox="0 0 200 380">
+                            <defs><linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#BFE3F3"/><stop offset="1" stop-color="#8CC4DE"/></linearGradient></defs>
+                            <rect x="22" y="14" width="156" height="352" rx="62" class="body"/>
+                            <rect x="34" y="128" width="132" height="132" rx="16" class="roof"/>
+                            <g data-zone="front"><path d="M44 120 Q100 92 156 120 L146 80 Q100 62 54 80 Z" class="glass"/></g>
+                            <g data-zone="fside"><path d="M30 132 L40 128 L40 192 L30 192 Z" class="glass"/><path d="M170 132 L160 128 L160 192 L170 192 Z" class="glass"/></g>
+                            <g data-zone="rside"><path d="M30 198 L40 198 L40 252 L30 248 Z" class="glass"/><path d="M170 198 L160 198 L160 252 L170 248 Z" class="glass"/></g>
+                            <g data-zone="rear"><path d="M48 268 Q100 284 152 268 L144 300 Q100 312 56 300 Z" class="glass"/></g>
+                            <rect x="64" y="22" width="72" height="8" rx="4" class="light"/>
+                        </svg>
+                        <span class="dlabel">{{ trans('azel.product.front') }}</span>
+                    </div>
+                    <div class="zone-rows" id="zone-rows"></div>
+                </div>
+                <div class="zone-all" id="zone-all"><span>{{ trans('azel.product.same_for_all') }}</span></div>
+                <p class="zone-err" id="zone-err" hidden>{{ trans('azel.product.zones_error') }}</p>
+            </div>
+
+            {# ---- درجة واحدة (عازل المنازل) ---- #}
+            <div class="opt light" id="opt-grade" hidden>
+                <div class="opt-label"><span class="ol-t" data-grade-title></span> <span>{{ trans('azel.product.selected') }}: <b data-t="label"></b> — <span data-t="name"></span></span></div>
+                <p class="muted grade-desc" data-t="desc"></p>
+                <div class="grades"></div>
+                <p class="zone-err" id="grade-err" hidden>{{ trans('azel.product.options_error') }}</p>
+            </div>
+
+            {% include 'pages.partials.product.options' with { azel_option_buttons: true } %}
+            <p class="zone-err" id="opt-err" hidden>{{ trans('azel.product.options_error') }}</p>
+
+            {% hook 'product:single.form.end' %}
+
+            {% if product.has_preorder_campaign %}
+                <div class="opt"><salla-count-down pre-order='{{ product.preorder|json_encode }}' boxed labeled></salla-count-down></div>
+            {% endif %}
+
+            <div class="buy-row">
+                {% if product.is_hidden_quantity or product.type == 'booking' %}
+                    <input type="hidden" value="1" name="quantity" aria-label="Quantity"/>
+                {% else %}
+                    <div class="qty">
+                        <salla-quantity-input max="{{ product.max_quantity }}" value="1" name="quantity" aria-label="{{ trans('azel.common.quantity') }}"></salla-quantity-input>
+                    </div>
+                {% endif %}
+
+                <salla-add-product-button id="add"
+                        {{ product.is_require_shipping ? 'required-shipping' : '' }}
+                        {{ product.has_preorder_campaign ? 'has-pre-order' : '' }}
+                        amount="{{ product.base_currency_price }}"
+                        product-status="{{ product.status }}"
+                        product-type="{{ product.type }}"
+                        product-id="{{ product.id }}"
+                        loader-position="end"
+                        type="submit"
+                        width="wide"
+                        {% if product.notify_availability %}
+                            {{ product.notify_availability.subscribed ? 'is-subscribed' : '' }}
+                            channels="{{ product.notify_availability.channels|join(',') }}"
+                            subscribed-options="{{ product.notify_availability.subscribed_options|json_encode }}"
+                            {{ product.notify_availability.options ? 'notify-options-availability' : '' }}
+                        {% endif %}>
+                    {% include 'pages.partials.azel.icon' with { i: 'bag', c: 'i-sm' } %} {{ product.add_to_cart_label|default(trans('azel.product.add_to_cart')) }}
+                </salla-add-product-button>
+
+                <button type="button" class="btn btn-outline btn-icon pdp-wish{{ product.is_in_wishlist ? ' on' : '' }}" data-id="{{ product.id }}" aria-label="{{ trans('azel.common.wishlist') }}">{% include 'pages.partials.azel.icon' with { i: 'heart' } %}</button>
+            </div>
+
+            {% if theme.settings.get('buy_now_enabled', true) and not product.is_out_of_stock and product.type not in ['booking', 'donating'] %}
+                <button type="button" class="btn btn-lime btn-lg btn-block buy-now" id="buy-now">{{ theme.settings.get('buy_now_text')|default(trans('azel.product.buy_now')) }}</button>
+            {% endif %}
+
+            {% if product.is_giftable %}
+                <salla-gifting class="opt" product-id="{{ product.id }}" {{ product.is_require_shipping ? 'physical-products' : '' }}></salla-gifting>
+            {% endif %}
+        </form>
+
+        {% if theme.settings.get('show_installment', false) %}
+            <salla-installment class="installment" price="{{ product.price }}"></salla-installment>
+        {% endif %}
+
+        {% set perks = [
+            { ic: 'shield', t: theme.settings.get('perk1_title', ''), s: theme.settings.get('perk1_text', '') },
+            { ic: 'truck', t: theme.settings.get('perk2_title', ''), s: theme.settings.get('perk2_text', '') },
+            { ic: 'refresh', t: theme.settings.get('perk3_title', ''), s: theme.settings.get('perk3_text', '') }
+        ] %}
+        {% if perks[0].t or perks[1].t or perks[2].t %}
+        <div class="perks">
+            {% for p in perks %}
+                {% if p.t %}<div class="perk">{% include 'pages.partials.azel.icon' with { i: p.ic } %}<div><b>{{ p.t }}</b>{{ p.s }}</div></div>{% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {# Product custom fields, rendered by Salla #}
+        <salla-quick-order class="quick-order"></salla-quick-order>
+
+        {% hook 'product:single.description.end' %}
+    </div>
+</section>
+
+{# ---- التبويبات ---- #}
+{% set ship_text = theme.settings.get('shipping_text', '')|trim %}
+{% set returns_text = theme.settings.get('returns_text', '')|trim %}
+{% set show_reviews = store.settings.rating.show_on_product|default(store.settings.rating_enabled) %}
+<section class="section az pdp-tabs-sec">
+    <div class="container">
+        <div class="tabs az-tabs" role="tablist">
+            <button type="button" class="active" data-tab="t-desc" role="tab" aria-selected="true">{{ trans('azel.product.tab_description') }}</button>
+            <button type="button" data-tab="t-specs" role="tab" aria-selected="false" id="tab-specs-btn" hidden>{{ trans('azel.product.tab_specs') }}</button>
+            {% if show_reviews %}<button type="button" data-tab="t-reviews" role="tab" aria-selected="false" id="reviews">{{ trans('azel.product.tab_reviews') }}</button>{% endif %}
+            {% if ship_text or returns_text %}<button type="button" data-tab="t-ship" role="tab" aria-selected="false">{{ theme.settings.get('shipping_title')|default(trans('azel.product.tab_shipping')) }}</button>{% endif %}
+        </div>
+        <div class="tab-panel active" id="t-desc" role="tabpanel">
+            {% hook 'product:single.description' %}
+            <div class="prose">{{ product.description|raw }}</div>
+        </div>
+        {# Salla's custom fields; the tab shows itself only when they render (azel-product.js) #}
+        <div class="tab-panel" id="t-specs" role="tabpanel"><salla-metadata></salla-metadata></div>
+        {% if show_reviews %}
+        <div class="tab-panel" id="t-reviews" role="tabpanel">
+            <div class="s-blocks-wrapper s-before-reviews">{% hook 'product.single.before_customer_reviews' %}</div>
+            <salla-comments item-id="{{ product.id }}" type="product"></salla-comments>
+        </div>
+        {% endif %}
+        {% if ship_text or returns_text %}
+        <div class="tab-panel" id="t-ship" role="tabpanel">
+            <div class="prose">
+                {% if ship_text %}<h3 class="ship-h">{{ trans('azel.product.shipping') }}</h3><ul>{% for line in ship_text|replace({"\r": ""})|split("\n") %}{% if line|trim %}<li>{{ line|trim }}</li>{% endif %}{% endfor %}</ul>{% endif %}
+                {% if returns_text %}<h3>{{ trans('azel.product.returns') }}</h3><p>{{ returns_text|nl2br }}</p>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<div class="container"><div class="s-blocks-wrapper s-before-related">{% hook 'product.single.before_product_recommendations' %}</div></div>
+
+{% if theme.settings.get('show_related', true) %}
+<section class="section bg-white-az az">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                {% if theme.settings.get('related_eyebrow') %}<span class="eyebrow">{{ theme.settings.get('related_eyebrow') }}</span>{% endif %}
+                <h2 class="section-title">{{ theme.settings.get('related_title')|default(trans('azel.product.related')) }}</h2>
+            </div>
+        </div>
+        <div class="products">
+            <salla-products-list source="related" source-value="{{ product.id }}" limit="4" autoload="false"></salla-products-list>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<div class="container"><div class="s-blocks-wrapper s-after-related">{% hook 'product.single.after_product_recommendations' %}</div></div>
+
+{% if not product.is_out_of_stock %}
+<div class="sticky-buy az" id="sticky-buy">
+    <span class="price total-price">{{ product.is_on_sale ? product.sale_price|money : product.price|money }}</span>
+    <button type="button" class="btn" id="sb-add">{% include 'pages.partials.azel.icon' with { i: 'bag', c: 'i-sm' } %} {{ product.add_to_cart_label|default(trans('azel.product.add_to_cart')) }}</button>
+</div>
+{% endif %}
+
+<salla-offer></salla-offer>
+{% endblock %}
+
+{% block scripts %}
+    <script defer src="{{ 'product.js' | asset }}"></script>
+    <script defer src="{{ 'azel-product.js' | asset }}"></script>
+{% endblock %}

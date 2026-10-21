@@ -1,0 +1,47 @@
+{#
+  AZEL — «اسمعها منهم مباشرة»: voice reviews with the design's waveform player.
+  Registered in twilight.json as `home.azel-voice` («عازل — تقييمات صوتية»).
+
+  component.eyebrow, title, subtitle
+  component.items[] — .name, .city, .product_label / .product_url (a link under
+                      the name), .rating (1–5), .audio (a link to an mp3 / m4a)
+  The waveform is drawn from the reviewer's name (azel-home.js), so it is the
+  same on every visit. An item without audio is skipped; with none, the whole
+  section stays hidden.
+#}
+{% set count = 0 %}
+{% for v in component.items %}{% if v.audio|default('')|trim %}{% set count = count + 1 %}{% endif %}{% endfor %}
+{% if count %}
+<section class="section bg-green on-dark voice-section az" data-voice-section>
+    <div class="container">
+        <div class="section-head">
+            <div>
+                {% if component.eyebrow %}<span class="eyebrow">{{ component.eyebrow }}</span>{% endif %}
+                {% if component.title %}<h2 class="section-title">{{ component.title }}</h2>{% endif %}
+                {% if component.subtitle %}<p class="section-sub">{{ component.subtitle }}</p>{% endif %}
+            </div>
+            <span class="voice-count">{% include 'pages.partials.azel.icon' with { i: 'mic', c: 'i-sm' } %} {{ count }} {{ count == 1 ? trans('azel.voice.one') : trans('azel.voice.many') }}</span>
+        </div>
+        <div class="voice-grid" data-play-label="{{ trans('azel.voice.play') }}" data-pause-label="{{ trans('azel.voice.pause') }}" data-soon-label="{{ trans('azel.voice.soon') }}">
+            {% for v in component.items %}
+                {% if v.audio|default('')|trim %}
+                {% set rating = v.rating|default(0) %}
+                <article class="voice-card" data-voice data-seed="{{ v.name }}{{ loop.index }}">
+                    <header class="vc-head">
+                        <span class="avatar">{{ v.name|default('')|trim|slice(0, 1) }}</span>
+                        <div class="vc-who"><b>{{ v.name }}</b><span>{{ v.city }}{% if v.city and v.product_label %} · {% endif %}{% if v.product_label %}<a href="{{ v.product_url|default('#') }}">{{ v.product_label }}</a>{% endif %}</span></div>
+                        {% if rating > 0 %}<span class="stars">{% for n in 1..5 %}{% include 'pages.partials.azel.icon' with { i: 'star', c: n <= rating ? '' : 'off' } %}{% endfor %}</span>{% endif %}
+                    </header>
+                    <div class="vc-player">
+                        <button type="button" class="vc-play" aria-label="{{ trans('azel.voice.play') }}">{% include 'pages.partials.azel.icon' with { i: 'play' } %}</button>
+                        <div class="vc-wave" role="slider" tabindex="0" aria-label="{{ trans('azel.voice.position') }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                        <span class="vc-time num">0:00</span>
+                    </div>
+                    <audio preload="metadata" src="{{ v.audio|trim }}"></audio>
+                </article>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}

@@ -1,0 +1,196 @@
+{#
+  AZEL — global header, rendered on every page from layouts/master.twig.
+  Markup and classes are the static design's (Azel+/assets/js/main.js,
+  renderHeader): .topbar, .site-header with the categories mega menu and the
+  search panel, the mobile menu drawer and the cart drawer.
+
+  The drawers sit OUTSIDE <header>: the header has a backdrop-filter, which
+  turns it into the containing block of any fixed descendant — a drawer
+  inside it would be clipped to the header's box.
+
+  Content sources:
+    topbar_*            — the announcement line and its copyable coupon
+    header_links        — "النص | الرابط" per line. Empty (the default) means
+                          the nav shows the merchant's header menu from the
+                          Salla dashboard, fetched by azel.js; a menu item that
+                          has sub-items becomes the design's mega menu.
+    nav_extra_links     — links added after the dashboard menu (warranty,
+                          install centers, contact…)
+    search_tags         — the «الأكثر بحثاً» chips, "النص | الرابط" per line
+
+  Styling: src/assets/styles/azel-chrome.scss. Behaviour: src/assets/js/azel.js.
+#}
+{# No macros: Salla's Twig has `import` disabled. #}
+{% set home = store.url %}
+{% set store_name = store.name|default(trans('azel.common.store')) %}
+{% set header_links = theme.settings.get('header_links', '')|trim %}
+{% set extra_links = theme.settings.get('nav_extra_links', '')|trim %}
+{% set wa = theme.settings.get('whatsapp_number')|default(store.contacts.whatsapp)|default('')|replace({' ': '', '+': '', '-': '', '(': '', ')': ''}) %}
+{% set phone = store.contacts.mobile|default(store.contacts.phone)|default('')|replace({' ': ''}) %}
+
+{# ============ الشريط العلوي ============ #}
+{% set tb_start = theme.settings.get('topbar_text_start', '') %}
+{% set tb_strong = theme.settings.get('topbar_text_strong', '') %}
+{% set tb_end = theme.settings.get('topbar_text_end', '') %}
+{% set tb_code = theme.settings.get('topbar_coupon', '')|trim %}
+{% if theme.settings.get('topbar_enabled', true) and (tb_start or tb_strong or tb_end or tb_code) %}
+<div class="topbar az" aria-label="{{ trans('azel.header.announcements') }}">
+    <div class="container">
+        {% include 'pages.partials.azel.icon' with { i: 'tag', c: 'i-xs' } %}
+        <span>{{ tb_start }}{% if tb_strong %} <strong>{{ tb_strong }}</strong>{% endif %}{% if tb_end %} {{ tb_end }}{% endif %}</span>
+        {% if tb_code %}
+            <button class="coupon" type="button" data-copy="{{ tb_code }}" aria-label="{{ trans('azel.common.copy_code') }}">{{ tb_code }}<span>{{ trans('azel.common.copy') }}</span></button>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{# ============ الهيدر ============ #}
+<header class="site-header az{{ theme.settings.get('header_is_sticky', true) ? '' : ' is-static' }}" id="header">
+    <div class="container header-inner">
+        <button class="h-btn menu-toggle" type="button" data-open="mnav" aria-label="{{ trans('azel.common.menu') }}">{% include 'pages.partials.azel.icon' with { i: 'menu' } %}</button>
+
+        <a href="{{ home }}" class="logo" aria-label="{{ store_name }}">
+            {% if store.logo %}
+                <img src="{{ store.logo }}" alt="{{ store_name }}" width="250" height="91">
+            {% else %}
+                <span class="logo-text">{{ store_name }}</span>
+            {% endif %}
+        </a>
+
+        <nav class="main-nav" id="nav" aria-label="{{ trans('azel.header.main_menu') }}"
+             data-source="{{ header_links ? 'settings' : 'dashboard' }}"
+             data-all-label="{{ trans('azel.header.browse_all') }}">
+            {% if header_links %}
+                {% for line in header_links|replace({"\r": ""})|split("\n") %}
+                    {% set parts = line|split('|') %}
+                    {% set label = parts[0]|default('')|trim %}
+                    {% set url = parts[1]|default('#')|trim %}
+                    {% if label %}<a href="{{ url }}"{% if url starts with 'http' and not (url starts with store.url) %} target="_blank" rel="noopener"{% endif %}>{{ label }}</a>{% endif %}
+                {% endfor %}
+            {% else %}
+                {% if theme.settings.get('show_home_link', true) %}<a href="{{ home }}">{{ trans('azel.common.home') }}</a>{% endif %}
+                {# the dashboard's header menu lands here (azel.js) #}
+                <span class="az-hide" data-menu-slot></span>
+            {% endif %}
+            {% for line in extra_links|replace({"\r": ""})|split("\n") %}
+                {% set parts = line|split('|') %}
+                {% set label = parts[0]|default('')|trim %}
+                {% set url = parts[1]|default('#')|trim %}
+                {% if label %}<a href="{{ url }}" data-extra{% if url starts with 'http' and not (url starts with store.url) %} target="_blank" rel="noopener"{% endif %}>{{ label }}</a>{% endif %}
+            {% endfor %}
+        </nav>
+
+        <div class="header-actions">
+            <button class="h-btn" type="button" data-search aria-label="{{ trans('azel.common.search') }}">{% include 'pages.partials.azel.icon' with { i: 'search' } %}</button>
+
+            {# Salla's own account menu and cart summary, as in Raed — dressed as
+               the design's .h-btn in azel-chrome.scss. The cart click opens the
+               Azel drawer instead of navigating (azel.js). #}
+            <span class="hide-sm"><salla-user-menu avatar-only show-header show-trigger></salla-user-menu></span>
+
+            <salla-cart-summary>
+                <span slot="icon">{% include 'pages.partials.azel.icon' with { i: 'bag' } %}</span>
+            </salla-cart-summary>
+        </div>
+    </div>
+
+    {# ============ لوحة البحث ============ #}
+    <div class="search-panel" id="search-panel"
+         data-all-label="{{ trans('azel.search.all_results') }}"
+         data-none-label="{{ trans('azel.search.none') }}">
+        <div class="container">
+            <form class="search-field" action="{{ store.url|trim('/', 'right') }}/search" method="get" role="search">
+                {% include 'pages.partials.azel.icon' with { i: 'search' } %}
+                <input type="search" name="q" autocomplete="off"
+                       placeholder="{{ theme.settings.get('search_placeholder')|default(trans('azel.search.placeholder')) }}"
+                       aria-label="{{ trans('azel.common.search') }}">
+            </form>
+            {% set tags = theme.settings.get('search_tags', '')|trim %}
+            {% if tags %}
+            <div class="search-tags"><span>{{ trans('azel.search.popular') }}</span>
+                {% for line in tags|replace({"\r": ""})|split("\n") %}
+                    {% set parts = line|split('|') %}
+                    {% set label = parts[0]|default('')|trim %}
+                    {% set url = parts[1]|default('')|trim %}
+                    {% if label %}
+                        {% if url %}
+                            <a href="{{ url }}"{% if url starts with 'http' and not (url starts with store.url) %} target="_blank" rel="noopener"{% endif %}>{{ label }}</a>
+                        {% else %}
+                            <a href="{{ store.url|trim('/', 'right') }}/search?q={{ label|url_encode }}">{{ label }}</a>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="search-res" id="search-res"></div>
+        </div>
+    </div>
+</header>
+
+<div class="overlay" id="overlay"></div>
+
+{# ============ درج القائمة (جوال) ============ #}
+<aside class="drawer drawer-start az" id="mnav" aria-label="{{ trans('azel.common.menu') }}">
+    <div class="drawer-head">
+        {% if store.logo %}<img src="{{ store.logo }}" alt="{{ store_name }}">{% else %}<span class="logo-text">{{ store_name }}</span>{% endif %}
+        <button class="h-btn" type="button" data-close aria-label="{{ trans('azel.common.close') }}">{% include 'pages.partials.azel.icon' with { i: 'x' } %}</button>
+    </div>
+    <div class="drawer-body">
+        <nav class="mobile-nav" id="mobile-nav" data-sections-label="{{ trans('azel.header.sections') }}">
+            {% if header_links %}
+                {% for line in header_links|replace({"\r": ""})|split("\n") %}
+                    {% set parts = line|split('|') %}
+                    {% set label = parts[0]|default('')|trim %}
+                    {% if label %}<a href="{{ parts[1]|default('#')|trim }}">{{ label }}{% include 'pages.partials.azel.icon' with { i: 'chevL', c: 'i-sm i-flip' } %}</a>{% endif %}
+                {% endfor %}
+            {% else %}
+                {% if theme.settings.get('show_home_link', true) %}<a href="{{ home }}">{{ trans('azel.common.home') }}{% include 'pages.partials.azel.icon' with { i: 'chevL', c: 'i-sm i-flip' } %}</a>{% endif %}
+                <span class="az-hide" data-menu-slot></span>
+            {% endif %}
+            {% for line in extra_links|replace({"\r": ""})|split("\n") %}
+                {% set parts = line|split('|') %}
+                {% set label = parts[0]|default('')|trim %}
+                {% set url = parts[1]|default('#')|trim %}
+                {% if label %}<a href="{{ url }}"{% if url starts with 'http' and not (url starts with store.url) %} target="_blank" rel="noopener"{% endif %}>{{ label }}{% include 'pages.partials.azel.icon' with { i: 'chevL', c: 'i-sm i-flip' } %}</a>{% endif %}
+            {% endfor %}
+            {% if user.type == 'guest' %}
+                <a href="#" data-login>{{ trans('azel.header.account') }}{% include 'pages.partials.azel.icon' with { i: 'chevL', c: 'i-sm i-flip' } %}</a>
+            {% else %}
+                <a href="{{ link('profile') }}">{{ trans('azel.header.account') }}{% include 'pages.partials.azel.icon' with { i: 'chevL', c: 'i-sm i-flip' } %}</a>
+            {% endif %}
+        </nav>
+        {% if wa or phone %}
+        <div class="mobile-contact">
+            {% if wa %}<a href="https://wa.me/{{ wa }}" target="_blank" rel="noopener" class="btn btn-wa btn-block">{% include 'pages.partials.azel.icon' with { i: 'wa' } %} {{ trans('azel.header.whatsapp') }}</a>{% endif %}
+            {% if phone %}<a href="tel:{{ phone }}" class="btn btn-outline btn-block">{% include 'pages.partials.azel.icon' with { i: 'phone' } %} {{ trans('azel.header.call') }}</a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</aside>
+
+{# ============ درج السلة ============ #}
+{% set free_ship = theme.settings.get('free_shipping_threshold', 0) %}
+<aside class="drawer drawer-end az" id="cart" aria-label="{{ trans('azel.cart.title') }}"
+       data-cart-url="{{ link('cart') }}"
+       data-shop-url="{{ store.url }}"
+       data-free-shipping="{{ free_ship ?: 0 }}"
+       data-empty-title="{{ trans('azel.cart.empty_title') }}"
+       data-empty-text="{{ theme.settings.get('cart_empty_text')|default(trans('azel.cart.empty_text')) }}"
+       data-empty-btn="{{ trans('azel.cart.empty_btn') }}"
+       data-total="{{ trans('azel.cart.total') }}"
+       data-note="{{ trans('azel.cart.note') }}"
+       data-view="{{ trans('azel.cart.view') }}"
+       data-checkout="{{ trans('azel.cart.checkout') }}"
+       data-ship-left="{{ trans('azel.cart.free_left') }}"
+       data-ship-done="{{ trans('azel.cart.free_done') }}"
+       data-out-of-stock="{{ trans('azel.common.sold_out') }}"
+       data-less="{{ trans('azel.cart.less') }}" data-more="{{ trans('azel.cart.more') }}"
+       data-remove="{{ trans('azel.cart.remove') }}">
+    <div class="drawer-head">
+        <h3>{% include 'pages.partials.azel.icon' with { i: 'bag' } %} {{ trans('azel.cart.title') }}</h3>
+        <button class="h-btn" type="button" data-close aria-label="{{ trans('azel.common.close') }}">{% include 'pages.partials.azel.icon' with { i: 'x' } %}</button>
+    </div>
+    <div class="drawer-body" id="mini-cart"></div>
+    <div class="drawer-foot" id="mini-cart-foot"></div>
+</aside>
