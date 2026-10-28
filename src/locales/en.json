@@ -54,7 +54,8 @@
       "sections": "Categories",
       "account": "My account",
       "whatsapp": "WhatsApp us",
-      "call": "Call us"
+      "call": "Call us",
+      "more": "More"
     },
     "search": {
       "placeholder": "Search for film, chargers, earbuds, diffusers...",

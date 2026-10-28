@@ -130,6 +130,83 @@ function mobileItem(m, sectionsLabel) {
 }
 
 /**
+ * «المزيد»: a merchant's menu can be wider than the bar. Instead of letting
+ * the links run over the icons, the ones that do not fit (from the end) are
+ * hidden on the bar and listed in a «المزيد» dropdown at its end. Re-measured
+ * whenever the bar can change width: menu loaded, fonts, logo, resize.
+ */
+function fitNav(nav) {
+    const inner = nav.parentElement;
+    const logo = $('.logo', inner);
+    const actions = $('.header-actions', inner);
+    if (!inner || !actions || getComputedStyle(nav).display === 'none') return;
+
+    let more = $('.nav-more', nav);
+    if (!more) {
+        more = document.createElement('div');
+        more.className = 'nav-drop nav-more';
+        more.innerHTML = `<a href="#" aria-haspopup="true" role="button">${esc(nav.dataset.moreLabel || '')} ${icon('chevD', 'i-xs')}</a><div class="mega" role="menu"></div>`;
+        more.firstElementChild.addEventListener('click', (e) => e.preventDefault());
+        nav.append(more);
+    }
+    const list = $('.mega', more);
+    const items = [...nav.children].filter((el) => el !== more && !el.matches('[data-menu-slot]'));
+
+    items.forEach((el) => { el.hidden = false; });
+    more.hidden = true;
+    list.innerHTML = '';
+
+    const cs = getComputedStyle(inner);
+    const gap = parseFloat(cs.columnGap) || 0;
+    const room = inner.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)
+        - (logo?.offsetWidth || 0) - actions.offsetWidth - gap * 2;
+    const used = () => {
+        const navGap = parseFloat(getComputedStyle(nav).columnGap) || 0;
+        return [...nav.children].filter((el) => !el.hidden)
+            .reduce((w, el, i) => w + el.offsetWidth + (i ? navGap : 0), 0);
+    };
+
+    // first the bar tightens (less padding, no gap), then links overflow
+    nav.classList.remove('nav-tight');
+    if (used() > room) nav.classList.add('nav-tight');
+
+    const hidden = [];
+    for (let i = items.length - 1; i >= 0 && used() > room; i--) {
+        items[i].hidden = true;
+        hidden.unshift(items[i]);
+        more.hidden = false;
+    }
+    list.innerHTML = hidden.map((el) => {
+        const a = el.matches('a') ? el : $('a', el);
+        return a ? `<a href="${esc(a.getAttribute('href'))}" class="more-item${a.classList.contains('active') ? ' active' : ''}" role="menuitem"${a.target ? ' target="_blank" rel="noopener"' : ''}>${esc(a.textContent.trim())}</a>` : '';
+    }).join('');
+}
+
+/** Salla's cart summary prints «0»; the design shows no badge on an empty cart. */
+function initCartBadge() {
+    const box = $('.header-actions');
+    if (!box) return;
+    const paint = () => $$('.s-cart-summary-count', box).forEach((b) => {
+        const n = Number(String(b.textContent).replace(/[^\d٠-٩]/g, '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))) || 0;
+        b.style.display = n ? '' : 'none';
+    });
+    new MutationObserver(paint).observe(box, { childList: true, subtree: true, characterData: true });
+    paint();
+}
+
+function initNavFit() {
+    const nav = $('#nav');
+    if (!nav) return;
+    const run = () => { try { fitNav(nav); } catch (error) { salla.logger.error('azel:: nav fit', error); } };
+    run();
+    document.addEventListener('azel::menu', run);
+    document.fonts?.ready.then(run);
+    $('.logo img')?.addEventListener('load', run);
+    let t = null;
+    window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(run, 120); });
+}
+
+/**
  * The nav and the mobile drawer come from the merchant's header menu in the
  * Salla dashboard — unless the "header links" theme setting is filled, in
  * which case header.twig already rendered those links and nothing is fetched.
@@ -153,11 +230,12 @@ function initMenu() {
             if (slot) slot.outerHTML = menus.map((m) => ((m.children || []).length
                 ? megaItem(m, nav.dataset.allLabel)
                 : `<a href="${esc(m.url)}"${target(m.url)}>${esc(m.title)}</a>`)).join('');
-            markActive($$('.main-nav > a, .nav-drop > a', nav));
+            markActive($$('.main-nav > a, .nav-drop:not(.nav-more) > a', nav));
 
             const mslot = mnav && $('[data-menu-slot]', mnav);
             if (mslot) mslot.outerHTML = menus.map((m) => mobileItem(m, mnav.dataset.sectionsLabel)).join('');
             mnav && markActive($$('a', mnav));
+            document.dispatchEvent(new CustomEvent('azel::menu'));
         })
         .catch((error) => salla.logger.error('azel:: header menu', error));
 }
@@ -465,6 +543,8 @@ salla.onReady(() => {
         ['layers', initLayers],
         ['header', initHeader],
         ['menu', initMenu],
+        ['nav fit', initNavFit],
+        ['cart badge', initCartBadge],
         ['search', initSearch],
         ['cart', initCart],
         ['copy', initCopy],

@@ -36,7 +36,14 @@
                     <span class="logo-text">{{ store_name }}</span>
                 {% endif %}
             </a>
-            {% set desc = theme.settings.get('footer_desc')|default(store.description) %}
+            {# The store description from the Salla dashboard is HTML (and may
+               arrive entity-encoded): entities are decoded first so encoded
+               tags are stripped too, block tags become spaces so words do not
+               run together, and the plain text is printed escaped. #}
+            {% set desc = theme.settings.get('footer_desc')|default(store.description)|default('') %}
+            {% set desc = desc|replace({'&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&#039;': "'", '&nbsp;': ' '})
+                |replace({'</p>': ' ', '<br>': ' ', '<br/>': ' ', '<br />': ' ', '</div>': ' ', '</li>': ' ', '</h2>': ' ', '</h3>': ' '})
+                |striptags|replace({'&amp;': '&'})|trim %}
             {% if desc %}<p>{{ desc }}</p>{% endif %}
             <div class="socials">
                 {% if store.social.instagram %}<a href="{{ store.social.instagram }}" target="_blank" rel="noopener" aria-label="{{ trans('azel.footer.instagram') }}">{% include 'pages.partials.azel.icon' with { i: 'insta', c: 'i-sm' } %}</a>{% endif %}

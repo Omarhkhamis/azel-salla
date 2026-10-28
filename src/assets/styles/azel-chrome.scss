@@ -107,13 +107,17 @@ body.lock{overflow:hidden}
 .logo-text{font:800 24px/1 var(--font-head);color:var(--green-700)}
 @media (max-width:640px){.logo img{height:38px}}
 
-.main-nav{display:flex;align-items:center;gap:4px;margin-inline-start:auto}
+.main-nav{display:flex;align-items:center;gap:4px;margin-inline-start:auto;flex:0 1 auto;min-width:0}
+.main-nav > [hidden]{display:none!important}
+/* a long merchant menu: tighter before anything moves into «المزيد» */
+.main-nav.nav-tight{gap:0}
+.main-nav.nav-tight > a,.main-nav.nav-tight > .nav-drop > a{padding-inline:9px;font-size:14px}
 .main-nav > a,.nav-drop > a{position:relative;padding:10px 14px;border-radius:999px;font-family:var(--font-head);font-size:14.5px;font-weight:500;color:var(--ink-2);transition:color .2s,background .2s;white-space:nowrap}
 .main-nav > a:hover,.nav-drop > a:hover{color:var(--green-700);background:var(--green-50)}
 .main-nav > a.active,.nav-drop > a.active{color:var(--green-700);font-weight:600}
 .main-nav > a.active::after,.nav-drop > a.active::after{content:"";position:absolute;bottom:3px;inset-inline:40%;height:3px;border-radius:3px;background:var(--lime)}
 
-.header-actions{display:flex;align-items:center;gap:4px;margin-inline-start:auto}
+.header-actions{display:flex;align-items:center;gap:4px;margin-inline-start:auto;flex:none}
 .main-nav + .header-actions{margin-inline-start:0}
 .h-btn{position:relative;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--ink-2);transition:background .2s,color .2s}
 .h-btn:hover{background:var(--green-50);color:var(--green-700)}
@@ -132,6 +136,10 @@ body.lock{overflow:hidden}
 .s-user-menu-dropdown-item-link{color:var(--ink-2);border-radius:10px}
 .s-user-menu-dropdown-item-link:hover{background:var(--green-50);color:var(--green-700)}
 
+@media (max-width:1280px){
+  .main-nav > a,.nav-drop > a{padding:10px 11px;font-size:14px}
+  .header-inner{gap:20px}
+}
 @media (max-width:1024px){
   .main-nav{display:none}
   .menu-toggle{display:grid!important}
@@ -153,6 +161,14 @@ body.lock{overflow:hidden}
 .mega a.mega-item:hover{background:var(--green-50)}
 .mega-img{width:54px;height:54px;border-radius:12px;overflow:hidden;background:var(--bg);flex:none;border:1px solid var(--line-2);display:grid;place-items:center;color:var(--green-700)}
 .mega-img img{width:100%;height:100%;object-fit:cover}
+/* «المزيد»: the menu items that do not fit on the bar (azel.js, fitNav).
+   It sits at the menu's end, next to the icons, so its list opens towards
+   the inside of the page instead of centring off-screen. */
+.nav-more .mega{width:250px;grid-template-columns:1fr;right:auto;left:0;transform:translateY(6px)}
+[dir=ltr] .nav-more .mega{left:auto;right:0}
+.nav-drop.nav-more:hover .mega,.nav-drop.nav-more:focus-within .mega{transform:none}
+.mega a.more-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border-radius:12px;font:500 14.5px var(--font-head);color:var(--ink-2);transition:background .2s,color .2s}
+.mega a.more-item:hover,.mega a.more-item.active{background:var(--green-50);color:var(--green-700)}
 .mega-item b{display:block;font-size:14.5px;color:var(--ink);font-weight:600;font-family:var(--font-head)}
 .mega-item small{color:var(--muted);font-size:12.5px;font-family:var(--font-body)}
 .mega a.mega-all{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;padding:12px;border-radius:12px;background:var(--green-700);color:#fff;font-weight:600;font-family:var(--font-head);font-size:14.5px}
@@ -405,8 +421,6 @@ body#app .s-reviews-testimonial,body#app .s-testimonial-card{background-color:#f
 body#app .s-block-title,body#app .s-block h2{font-family:var(--font-head)}
 body#app .s-slider-nav-arrow{border-radius:50%}
 
-/* Grid/flex children must be allowed to shrink below their content width */
-.header-inner > *{min-width:0}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}

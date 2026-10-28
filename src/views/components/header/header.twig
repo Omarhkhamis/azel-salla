@@ -60,7 +60,8 @@
 
         <nav class="main-nav" id="nav" aria-label="{{ trans('azel.header.main_menu') }}"
              data-source="{{ header_links ? 'settings' : 'dashboard' }}"
-             data-all-label="{{ trans('azel.header.browse_all') }}">
+             data-all-label="{{ trans('azel.header.browse_all') }}"
+             data-more-label="{{ trans('azel.header.more') }}">
             {% if header_links %}
                 {% for line in header_links|replace({"\r": ""})|split("\n") %}
                     {% set parts = line|split('|') %}
