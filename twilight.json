@@ -1,4 +1,5 @@
 {
+  "type": "react",
   "name": {
     "ar": "عازل بلس",
     "en": "Azel Plus"
@@ -1082,6 +1083,17 @@
       "format": "switch",
       "icon": "sicon-toggle-off",
       "label": "إظهار مسار التنقل",
+      "required": false,
+      "value": true,
+      "selected": true
+    },
+    {
+      "key": "6f09314f-c999-4e83-be12-ebfc876d2ae3",
+      "type": "boolean",
+      "id": "show_sold_count",
+      "format": "switch",
+      "icon": "sicon-shopping-bag",
+      "label": "إظهار عدد مرات الشراء (يتطلب تفعيله من إعدادات المنتجات في سلة)",
       "required": false,
       "value": true,
       "selected": true

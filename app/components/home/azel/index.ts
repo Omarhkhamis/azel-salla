@@ -1,0 +1,12 @@
+export { AzelHero } from './AzelHero';
+export { AzelTrust } from './AzelTrust';
+export { AzelFeatures } from './AzelFeatures';
+export { AzelSteps } from './AzelSteps';
+export { AzelCategories } from './AzelCategories';
+export { AzelShowcase } from './AzelShowcase';
+export { AzelProducts } from './AzelProducts';
+export { AzelGift } from './AzelGift';
+export { AzelReviews } from './AzelReviews';
+export { AzelVoice } from './AzelVoice';
+export { AzelFaq } from './AzelFaq';
+export { AzelCta } from './AzelCta';
