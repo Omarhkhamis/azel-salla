@@ -24,6 +24,9 @@ vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
   }),
 }));
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
+  Image: ({ src, alt, priority }: { src: string; alt: string; priority?: boolean }) => (
+    <img src={src} alt={alt} data-priority={priority ? 'yes' : 'no'} />
+  ),
   Link: ({ to, children, ...rest }: { to: string; children?: React.ReactNode }) => (
     <a href={to} {...rest}>
       {children}
@@ -113,6 +116,11 @@ describe('ProductCard', () => {
     expect(render(<ProductCard product={rated} />).container.querySelector('.p-rating')).toBeTruthy();
     settings = { card_show_rating: false };
     expect(render(<ProductCard product={rated} />).container.querySelector('.p-rating')).toBeNull();
+  });
+
+  it('draws the photo through the CDN image, eager only for the first row', () => {
+    const { container } = render(<ProductCard product={makeProduct()} imagePriority />);
+    expect(container.querySelector('.p-media img')?.getAttribute('data-priority')).toBe('yes');
   });
 
   it('covers the image when the merchant picks cover', () => {

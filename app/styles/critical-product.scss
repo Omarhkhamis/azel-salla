@@ -1,4 +1,5 @@
-/* First-screen CSS for the product route, inlined by __root.tsx; app.css's order, and app.css takes over once loaded. */
+/* First-screen CSS for the product route, inlined by __root.tsx; app.css's order, and app.css takes over once loaded.
+   Only what the Azel product page paints first: Raed's product page, gallery slider and metadata come with app.css. */
 
 @config './critical-product.tailwind.cjs';
 @tailwind base;
@@ -15,18 +16,10 @@
 @import './02-generic/ltr';
 @import './02-generic/mixins';
 
-@import './vendor/swiper.css';
-
 @import './03-elements/form';
 @import './03-elements/buttons';
 @import './03-elements/radio';
 @import './03-elements/radio-images';
-
-@import './04-components/breadcrumb';
-@import './04-components/slider';
-@import './04-components/product';
-@import './04-components/metadata';
-@import './04-components/quantity-stepper';
 
 @import './05-utilities/font-customization';
 

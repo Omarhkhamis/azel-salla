@@ -7,7 +7,7 @@ import { SallaMetadata } from '@salla.sa/twilight-components-react/metadata';
 import { SallaOffer } from '@salla.sa/twilight-components-react/offer';
 import { SallaQuickOrder } from '@salla.sa/twilight-components-react/quick-order';
 import { product as productApi } from '@salla.sa/twilight-theme-engine/api/product';
-import { Breadcrumb } from '@salla.sa/twilight-theme-engine/common';
+import { Breadcrumb, Image } from '@salla.sa/twilight-theme-engine/common';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
 import { useComments } from '@salla.sa/twilight-theme-engine/hooks/useComments';
 import { useMoney } from '@salla.sa/twilight-theme-engine/hooks/useMoney';
@@ -28,6 +28,10 @@ import placeholderUrl from '../../assets/placeholder.png';
 import tabbyUrl from '../../assets/pay/tabby_installment.png';
 import tamaraUrl from '../../assets/pay/tamara_installment.png';
 import { amount, lines, pick, plainText, visibleProducts } from '../../lib/azel/utils';
+
+/** Salla's CDN sizes the photos to the gallery instead of sending the originals. */
+const PHOTO_WIDTHS = [480, 720, 960, 1280] as const;
+const THUMB_WIDTHS = [120, 200] as const;
 
 /** Thumbnails swap the main photo; an option whose value carries an image shows it. */
 function Gallery({
@@ -73,18 +77,21 @@ function Gallery({
               aria-label={`${t('azel.common.image')} ${i + 1}`}
               onClick={() => setActiveUrl(image.url ?? null)}
             >
-              <img src={image.url} alt="" loading="lazy" />
+              <Image src={image.url} alt="" srcSetWidths={THUMB_WIDTHS} sizes="88px" />
             </button>
           ))}
         </div>
       )}
       <div className={`main-img${cover ? '' : ' contain'}`} id="main-img">
         {product.promotion_title && <span className="badge">{product.promotion_title}</span>}
-        <img
+        <Image
           src={mainUrl}
           alt={product.image?.alt || product.name}
           id="main-photo"
-          fetchPriority="high"
+          objectFit={cover ? 'cover' : 'contain'}
+          priority
+          srcSetWidths={PHOTO_WIDTHS}
+          sizes="(max-width: 960px) 100vw, 640px"
         />
       </div>
     </div>

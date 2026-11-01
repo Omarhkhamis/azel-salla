@@ -1,4 +1,4 @@
-// Tailwind for critical.scss: the theme's setup, scanning only the home page's first-screen components.
+// Tailwind for critical.scss: the theme's setup, scanning only the Azel home page's first-screen components.
 const fs = require('fs');
 const path = require('path');
 const base = require('../../tailwind.config.cjs');
@@ -13,8 +13,8 @@ module.exports = {
   ...base,
   content: [
     './app/routes/__root.tsx',
-    './app/components/{layout,home}/**/*.{ts,tsx}',
-    `${engine}/components/{layout,home}/**/*`,
+    './app/components/{layout,azel}/**/*.{ts,tsx}',
+    './app/components/home/azel/**/*.{ts,tsx}',
     // The page's own placeholder blocks.
     `${engine}/routes/home/**/*`,
     // The SDK's server skeletons, which stand in for its components until they load.

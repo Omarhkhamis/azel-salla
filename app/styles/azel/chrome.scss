@@ -127,7 +127,9 @@ body.lock{overflow:hidden}
 .header-actions .s-cart-summary-wrapper,.header-actions .s-user-menu-trigger,.header-actions .s-user-menu-avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;position:relative;transition:background .2s,color .2s;border:0;color:var(--ink-2);background:none;padding:0}
 .header-actions .s-cart-summary-wrapper:hover,.header-actions .s-user-menu-trigger:hover,.header-actions .s-user-menu-avatar:hover{background:var(--green-50);color:var(--green-700)}
 .header-actions .s-cart-summary-icon,.header-actions #s-cart-icon,.header-actions #s-cart-icon [slot=icon]{display:grid;place-items:center;line-height:1}
-.header-actions .s-cart-summary-label,.header-actions .s-cart-summary-total,.header-actions .s-cart-summary-content{display:none}
+.header-actions .s-cart-summary-total,.header-actions .s-cart-summary-content{display:none}
+/* hidden from sight only: it is the cart link's accessible name */
+.header-actions .s-cart-summary-label{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .header-actions .s-cart-summary-count{position:absolute;top:4px;inset-inline-end:2px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--lime);color:var(--green-900);border:2px solid #fff;font:700 11px/15px var(--font-head);text-align:center}
 .header-actions .s-user-menu-trigger i,.header-actions .s-user-menu-avatar i{font-size:21px}
 .header-actions .s-user-menu-avatar img{width:28px;height:28px;border-radius:50%;object-fit:cover}
@@ -353,7 +355,7 @@ body.lock{overflow:hidden}
 .footer-brand img.to-white{filter:brightness(0) invert(1)}
 .footer-brand .logo-text{color:#fff;display:block;margin-bottom:18px}
 .footer-brand p{font-size:14.5px;max-width:340px}
-.site-footer h4{color:#fff;font-size:15px;margin-bottom:16px;font-weight:600}
+.site-footer h3{color:#fff;font-size:15px;margin-bottom:16px;font-weight:600}
 .footer-links{display:grid;gap:10px;font-size:14.5px}
 .footer-links a:hover{color:var(--lime)}
 .footer-contact a{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:14.5px}
@@ -368,6 +370,8 @@ body.lock{overflow:hidden}
 .footer-docs .s-trust-badges-wrapper,.footer-docs .s-trust-badges{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center}
 .footer-docs .s-trust-badges-item,.footer-docs .s-trust-badges-badge{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:6px 10px;color:#DCE8E3}
 .footer-docs .s-trust-badges-item img,.footer-docs .s-trust-badges-badge img{max-height:36px;width:auto}
+/* the component's own badge image sits directly in it: keep its size, never shrink it away */
+.footer-docs .s-trust-badges-image{display:block;max-width:none;width:auto;height:40px;flex:none}
 .f-badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:6px 10px}
 .f-badge img{flex:none;background:#fff;border-radius:6px;padding:2px}
 .f-badge p{font-size:13px;line-height:1.25;margin:0 0 3px}

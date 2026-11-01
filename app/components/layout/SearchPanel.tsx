@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { product } from '@salla.sa/twilight-theme-engine/api/product';
-import { Link } from '@salla.sa/twilight-theme-engine/common';
+import { Image, Link } from '@salla.sa/twilight-theme-engine/common';
 import { useMoney } from '@salla.sa/twilight-theme-engine/hooks/useMoney';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useNavigate } from '@salla.sa/twilight-theme-engine/providers';
@@ -17,7 +17,7 @@ function SearchResult({ item }: { item: Product }) {
   const price = item.is_on_sale ? item.sale_price : (item.price ?? item.starting_price);
   return (
     <Link to={item.url}>
-      <img src={item.image?.url} alt="" loading="lazy" />
+      <Image src={item.image?.url} alt="" srcSetWidths={[120]} sizes="56px" />
       <span>
         <span className="n">{item.name}</span>
         <span className="c">{item.category?.name ?? ''}</span>

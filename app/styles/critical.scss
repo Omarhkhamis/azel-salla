@@ -1,4 +1,5 @@
-/* First-screen CSS for the home route, inlined by __root.tsx; app.css's order, and app.css takes over once loaded. */
+/* First-screen CSS for the home route, inlined by __root.tsx; app.css's order, and app.css takes over once loaded.
+   Only what the Azel home paints first: Raed's home blocks and the Swiper slider come with app.css. */
 
 @config './critical.tailwind.cjs';
 @tailwind base;
@@ -15,12 +16,7 @@
 @import './02-generic/ltr';
 @import './02-generic/mixins';
 
-@import './vendor/swiper.css';
-
 @import './03-elements/buttons';
-
-@import './04-components/home-blocks';
-@import './04-components/slider';
 
 @import './05-utilities/font-customization';
 

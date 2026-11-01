@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Image } from '@salla.sa/twilight-theme-engine/common';
 import { AzLink } from '../../azel/AzLink';
 import { Icon } from '../../azel/Icon';
 import { SectionHead } from '../../azel/SectionHead';
@@ -34,7 +35,14 @@ export const AzelCategories = memo(function AzelCategories({
         <div className="cat-tiles">
           {tiles.map((tile, i) => (
             <AzLink key={i} href={linkUrl(tile.url)} className="cat-tile">
-              <span className="ct-img">{tile.image && <img src={tile.image} alt="" loading="lazy" />}</span>
+              <span className="ct-img">{tile.image && (
+                  <Image
+                    src={tile.image}
+                    alt=""
+                    srcSetWidths={[240, 400, 600]}
+                    sizes="(max-width: 820px) 50vw, 300px"
+                  />
+                )}</span>
               <span className="ct-body">
                 <b>{tile.name}</b>
                 {tile.sub && <small>{tile.sub}</small>}

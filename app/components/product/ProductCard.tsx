@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import type { ProductCardProps } from '@salla.sa/twilight-theme-engine/product';
-import { Link } from '@salla.sa/twilight-theme-engine/common';
+import { Image, Link } from '@salla.sa/twilight-theme-engine/common';
 import { useMoney } from '@salla.sa/twilight-theme-engine/hooks/useMoney';
 import { useWishlist } from '@salla.sa/twilight-theme-engine/hooks/useWishlist';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
@@ -12,6 +12,9 @@ import { amount, pick } from '../../lib/azel/utils';
 import { sdk } from '../../lib/azel/sdk';
 import placeholderUrl from '../../assets/placeholder.png';
 
+
+/** Salla's CDN resizes the photo to the card instead of sending the original. */
+const CARD_WIDTHS = [240, 360, 480, 640] as const;
 
 function Badge({ product }: { product: Product }) {
   const { t } = useTranslation();
@@ -146,11 +149,18 @@ export function ProductCard({ product, className, imagePriority }: ProductCardPr
         <Icon name="heart" className="i-sm" />
       </button>
       <Link to={product.url} className={`p-media${cover ? ' cover' : ''}`}>
-        <img
-          src={product.image?.url || placeholderUrl}
-          alt={product.image?.alt || product.name}
-          loading={imagePriority ? 'eager' : 'lazy'}
-        />
+        {product.image?.url ? (
+          <Image
+            src={product.image.url}
+            alt={product.image.alt || product.name}
+            objectFit={cover ? 'cover' : 'contain'}
+            priority={!!imagePriority}
+            srcSetWidths={CARD_WIDTHS}
+            sizes="(max-width: 820px) 50vw, (max-width: 1100px) 33vw, 300px"
+          />
+        ) : (
+          <img src={placeholderUrl} alt={product.name} loading="lazy" />
+        )}
       </Link>
       <div className="p-body">
         {product.category?.name && <span className="p-cat">{product.category.name}</span>}

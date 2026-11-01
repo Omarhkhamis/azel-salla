@@ -22,7 +22,7 @@ function FooterColumn({ title, links }: { title?: string; links?: string }) {
   if (!title && !String(links ?? '').trim()) return null;
   return (
     <div>
-      {title && <h4>{title}</h4>}
+      {title && <h3>{title}</h3>}
       <div className="footer-links">
         {items.map((link) => (
           <AzLink key={`${link.label}-${link.url}`} href={link.url}>
@@ -156,7 +156,7 @@ export function Footer() {
 
         {(whatsapp || phone || email) && (
           <div className="footer-contact-col">
-            <h4>{contactTitle}</h4>
+            <h3>{contactTitle}</h3>
             <div className="footer-contact">
               {whatsapp && (
                 <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener">

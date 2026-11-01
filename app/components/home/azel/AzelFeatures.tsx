@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Image } from '@salla.sa/twilight-theme-engine/common';
 import { useMoney } from '@salla.sa/twilight-theme-engine/hooks/useMoney';
 import { AzLink } from '../../azel/AzLink';
 import { Reveal } from '../../azel/Reveal';
@@ -64,7 +65,14 @@ export const AzelFeatures = memo(function AzelFeatures({
               <Reveal as="article" key={i} className="feature-card">
                 {card.badge && <span className="badge">{card.badge}</span>}
                 <AzLink href={url} className="feature-media">
-                  {card.image && <img src={card.image} alt={card.title ?? ''} loading="lazy" />}
+                  {card.image && (
+                    <Image
+                      src={card.image}
+                      alt={card.title ?? ''}
+                      srcSetWidths={[480, 720, 960]}
+                      sizes="(max-width: 960px) 100vw, 600px"
+                    />
+                  )}
                 </AzLink>
                 <div className="feature-body">
                   <div>

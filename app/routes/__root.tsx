@@ -25,6 +25,11 @@ const DevSettingsWidget = import.meta.env.DEV
     )
   : null;
 
+const FONTS_URL =
+  'https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap';
+const ASYNC_FONTS =
+  "(function(l){if(!l)return;if(l.sheet)l.media='all';else l.onload=function(){this.media='all'}})(document.getElementById('azel-fonts'))";
+
 export const Route = createTwilightRootRoute()({
   shellComponent: RootComponent,
 });
@@ -45,13 +50,16 @@ function RootComponent() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {/* Home and product paint from inline critical CSS; `bootClient` adds the full sheet once
             their first screen has painted. Other routes: the full sheet blocks, as before. */}
-        {/* The design's two faces: Alexandria for headings, IBM Plex Sans Arabic for text. */}
+        {/* The design's two faces: Alexandria for headings, IBM Plex Sans Arabic for text.
+            Loaded without blocking the first paint, as the engine loads the store font:
+            `media="print"` until the sheet arrives, then `all`. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap"
-        />
+        <link id="azel-fonts" rel="stylesheet" href={FONTS_URL} media="print" suppressHydrationWarning />
+        <script dangerouslySetInnerHTML={{ __html: ASYNC_FONTS }} />
+        <noscript>
+          <link rel="stylesheet" href={FONTS_URL} />
+        </noscript>
         <ThemeStylesheet href={appCssUrl} critical={CRITICAL_CSS} />
         <ThemeHeadContent />
       </head>

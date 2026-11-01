@@ -1,4 +1,5 @@
 import { memo, useMemo, useState } from 'react';
+import { Image } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { AzLink } from '../../azel/AzLink';
@@ -163,10 +164,12 @@ export const AzelHero = memo(function AzelHero({ data }: BlockProps<HeroData>) {
             grades.length > 0 && <TintCard data={data} grades={grades} />
           ) : data.image ? (
             <div className="hero-frame">
-              <img
+              <Image
                 src={data.image}
                 alt={`${data.title_start ?? ''} ${data.highlight ?? ''}`.trim()}
-                fetchPriority="high"
+                priority={!!data.priority}
+                srcSetWidths={[480, 720, 960, 1280]}
+                sizes="(max-width: 960px) 100vw, 600px"
               />
             </div>
           ) : null}

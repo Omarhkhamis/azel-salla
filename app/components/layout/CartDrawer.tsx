@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Link } from '@salla.sa/twilight-theme-engine/common';
+import { Image, Link } from '@salla.sa/twilight-theme-engine/common';
 import { useMoney } from '@salla.sa/twilight-theme-engine/hooks/useMoney';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useLocation, useNavigate } from '@salla.sa/twilight-theme-engine/providers';
@@ -149,7 +149,11 @@ function DrawerRow({
   return (
     <div className={`mini-item${busy ? ' busy' : ''}`}>
       <a href={url}>
-        <img src={item.product_image || item.image || placeholderUrl} alt="" loading="lazy" />
+        {item.product_image || item.image ? (
+          <Image src={item.product_image || item.image} alt="" srcSetWidths={[160]} sizes="72px" />
+        ) : (
+          <img src={placeholderUrl} alt="" loading="lazy" />
+        )}
       </a>
       <div>
         <h4>
