@@ -2,7 +2,6 @@ import { Fragment, useEffect, useMemo, useRef, useState, type MouseEvent } from 
 import { useQuery } from '@tanstack/react-query';
 import { menu } from '@salla.sa/twilight-theme-engine/api/menu';
 import { SallaCartSummary } from '@salla.sa/twilight-components-react/cart-summary';
-import { SallaSearch } from '@salla.sa/twilight-components-react/search';
 import { SallaUserMenu } from '@salla.sa/twilight-components-react/user-menu';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
@@ -468,9 +467,6 @@ export function Header() {
 
       <MobileNav entries={entries} whatsapp={whatsapp} phone={phone} />
 
-      {/* Required by Salla and used by apps that dispatch `search::open`; the header's
-          own button opens the Azel panel above. */}
-      <SallaSearch suppressHydrationWarning />
 
       <HookSlot name="header:end" />
     </>

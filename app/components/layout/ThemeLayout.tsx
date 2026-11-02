@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import themeTranslations from 'virtual:twilight/theme-translations';
+import { SallaSearch } from '@salla.sa/twilight-components-react/search';
 import { useUser } from '@salla.sa/twilight-theme-engine/hooks/useUser';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
@@ -168,6 +169,10 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
         </div>
         <WhatsAppFloat />
         <Toasts />
+        {/* Salla's search, which apps open with `search::open`. In the frame, not the header:
+            the Salla mobile app hides the theme's header. The header's own button opens
+            the Azel search panel. */}
+        <SallaSearch suppressHydrationWarning />
         <GlobalModals />
       </CartDrawerProvider>
     </LayersProvider>

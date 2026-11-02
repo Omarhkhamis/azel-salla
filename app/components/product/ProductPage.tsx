@@ -422,6 +422,7 @@ export function ProductPage({ product: initialProduct, page }: ProductPageProps)
         <Gallery product={initialProduct} formRef={formRef} />
 
         <div className="pdp-info">
+          <HookSlot name="product:details.start" />
           {chip && (
             <AzLink className="chip" href={chip.url}>
               {chip.name}
@@ -482,6 +483,7 @@ export function ProductPage({ product: initialProduct, page }: ProductPageProps)
 
           <PriceBlock product={product} />
           <Bnpl product={product} />
+          <HookSlot name="product:details.end" />
 
           <SallaConditionalOffer />
 

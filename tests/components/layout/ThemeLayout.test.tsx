@@ -14,6 +14,9 @@ vi.mock('@salla.sa/twilight-theme-engine/hooks/useUser', () => ({
   useUser: () => ({ isLoggedIn: true }),
 }));
 vi.mock('../../../app/components/layout/Header', () => ({ Header: () => null }));
+vi.mock('@salla.sa/twilight-components-react/search', () => ({
+  SallaSearch: () => <div data-testid="salla-search" />,
+}));
 vi.mock('../../../app/components/layout/Footer', () => ({ Footer: () => null }));
 vi.mock('../../../app/components/layout/Toasts', () => ({ Toasts: () => null }));
 vi.mock('../../../app/components/layout/Layers', () => ({
@@ -88,5 +91,12 @@ describe("ThemeLayout's component translations", () => {
   it('renders without the SDK, as on the server', () => {
     const { getByText } = render(<ThemeLayout>page</ThemeLayout>);
     expect(getByText('page')).toBeTruthy();
+  });
+});
+
+describe('ThemeLayout frame', () => {
+  it("renders Salla's search outside the header, which the Salla app hides", () => {
+    const { getByTestId } = render(<ThemeLayout>page</ThemeLayout>);
+    expect(getByTestId('salla-search')).toBeTruthy();
   });
 });
