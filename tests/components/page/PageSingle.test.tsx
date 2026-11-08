@@ -11,6 +11,9 @@ vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
 vi.mock('@salla.sa/twilight-theme-engine/hooks/useComments', () => ({
   useComments: () => ({ commentsKey: 'k' }),
 }));
+vi.mock('@salla.sa/twilight-theme-engine/hooks', () => ({
+  HookSlot: ({ name }: { name: string }) => <i data-testid="slot" data-name={name} />,
+}));
 vi.mock('../../../app/components/common', () => ({
   BlockHookSlot: ({ name }: { name: string }) => <div data-testid="hook" data-name={name} />,
 }));
@@ -19,12 +22,25 @@ const page = (overrides: Partial<PageWithType>): PageWithType =>
   ({ id: 7, slug: 'page-single', title: 'About', url: '/about/page-7', ...overrides }) as PageWithType;
 
 describe('PageSingle', () => {
-  it('renders only the app hook on a customised page', () => {
+  it('renders only the app hooks on a customised page', () => {
     const { getByTestId, queryByText } = render(
       <PageSingle page={page({ type: 'customised', content: '<p>x</p>' })} />
     );
     expect(getByTestId('hook').dataset.name).toBe('information_page.information_page');
     expect(queryByText('About')).toBeNull();
+  });
+
+  it.each([
+    ['customised', { type: 'customised' }],
+    ['full-width', { content: '<section>x</section>' }],
+    ['plain', { content: '<p>x</p>' }],
+  ])('keeps the hook points partner apps inject into on a %s page', (_kind, overrides) => {
+    const { getAllByTestId, getByTestId } = render(<PageSingle page={page(overrides)} />);
+    expect(getAllByTestId('slot').map((el) => el.dataset.name)).toEqual([
+      'page-single:start',
+      'page-single:end',
+    ]);
+    expect(getByTestId('hook').dataset.name).toBe('information_page.information_page');
   });
 
   it('prints content with its own sections full width, without the page head', () => {
