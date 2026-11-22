@@ -6,6 +6,25 @@ afterEach(() => {
   cleanup();
 });
 
+// Node 26 ships its own experimental `localStorage` global, undefined without
+// --localstorage-file, and it shadows jsdom's. An in-memory one stands in.
+if (typeof window !== 'undefined' && !window.localStorage) {
+  const store = new Map<string, string>();
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: (key: string) => (store.has(key) ? store.get(key)! : null),
+      setItem: (key: string, value: string) => void store.set(key, String(value)),
+      removeItem: (key: string) => void store.delete(key),
+      clear: () => store.clear(),
+      key: (index: number) => [...store.keys()][index] ?? null,
+      get length() {
+        return store.size;
+      },
+    },
+  });
+}
+
 // jsdom doesn't implement matchMedia. Default to "matches" so components that
 // gate mobile-only behavior behind a media query (e.g. MobileBottomBar's DOM
 // observers) behave as they would on a small screen, matching what the

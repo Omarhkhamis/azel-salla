@@ -1,5 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
-import { giftLines, giftOptions, missingOption, pickedIds, placeGift } from '../../../app/lib/azel/gift';
+import { afterEach } from 'vitest';
+import {
+  giftOptions,
+  missingOption,
+  pickedIds,
+  placeGift,
+  placedGiftLine,
+  readPlacedGift,
+} from '../../../app/lib/azel/gift';
 
 describe('pickedIds', () => {
   it('reads a product picker in every shape it arrives in', () => {
@@ -51,31 +59,37 @@ describe('giftOptions / missingOption', () => {
 });
 
 describe('placeGift', () => {
-  const GIFTS = [417224696, 1011424832, 1033697530, 1898207907];
+  afterEach(() => window.localStorage.clear());
 
-  it('finds the gift lines in the cart', () => {
-    const cart = { cart: { items: [{ id: 9, product_id: 1224786269 }, { id: 10, product_id: '417224696' }] } };
-    expect(giftLines(cart, GIFTS)).toEqual([{ id: 10, product_id: '417224696' }]);
-  });
-
-  it('replaces a gift already in the cart instead of adding a second one', async () => {
+  const TINT_LINE = { id: 1, product_id: 1224786269, quantity: 1 };
+  /** A cart stand-in that records its calls in order. */
+  function fakeCart(items: object[], cartId = 77) {
     const calls: string[] = [];
-    const cart = {
-      details: vi.fn(async () => ({
-        data: {
-          cart: {
-            items: [
-              { id: 1, product_id: 1224786269 },
-              { id: 2, product_id: 417224696 },
-            ],
-          },
-        },
-      })),
+    return {
+      calls,
+      details: vi.fn(async () => ({ data: { cart: { id: cartId, items } } })),
       deleteItem: vi.fn(async (id: unknown) => void calls.push(`delete ${id}`)),
+      updateItem: vi.fn(
+        async (item: { id: unknown; quantity: number }) => void calls.push(`update ${item.id} → ${item.quantity}`)
+      ),
       addItem: vi.fn(async (item: { id: number }) => void calls.push(`add ${item.id}`)),
     };
-    await placeGift(cart, { id: 1033697530, options: { '1115672946': 855392916 } }, GIFTS);
-    expect(calls).toEqual(['delete 2', 'add 1033697530']);
+  }
+  const remember = (gift: object) => window.localStorage.setItem('azel:gift', JSON.stringify(gift));
+
+  it('adds the gift next to a paid one the customer put in the cart themselves', async () => {
+    const cart = fakeCart([TINT_LINE, { id: 2, product_id: 417224696, quantity: 1 }]);
+    await placeGift(cart, { id: 417224696, options: {} });
+    expect(cart.calls).toEqual(['add 417224696']);
+    expect(cart.addItem).toHaveBeenCalledWith({ id: 417224696, quantity: 1 });
+    expect(readPlacedGift()).toEqual({ cartId: '77', id: 417224696, options: {} });
+  });
+
+  it('replaces the gift it placed in this cart', async () => {
+    remember({ cartId: '77', id: 417224696, options: {} });
+    const cart = fakeCart([TINT_LINE, { id: 2, product_id: 417224696, quantity: 1 }]);
+    await placeGift(cart, { id: 1033697530, options: { '1115672946': 855392916 } });
+    expect(cart.calls).toEqual(['delete 2', 'add 1033697530']);
     expect(cart.addItem).toHaveBeenCalledWith({
       id: 1033697530,
       quantity: 1,
@@ -83,14 +97,26 @@ describe('placeGift', () => {
     });
   });
 
-  it('adds a gift without options as a plain product', async () => {
-    const cart = {
-      details: vi.fn(async () => ({ data: { cart: { items: [] } } })),
-      deleteItem: vi.fn(),
-      addItem: vi.fn(async () => undefined),
-    };
-    await placeGift(cart, { id: 417224696, options: {} }, GIFTS);
-    expect(cart.deleteItem).not.toHaveBeenCalled();
-    expect(cart.addItem).toHaveBeenCalledWith({ id: 417224696, quantity: 1 });
+  it('takes only one off a line that holds a paid one and the gift', async () => {
+    remember({ cartId: '77', id: 417224696, options: {} });
+    const cart = fakeCart([TINT_LINE, { id: 2, product_id: 417224696, quantity: 2 }]);
+    await placeGift(cart, { id: 1898207907, options: {} });
+    expect(cart.calls).toEqual(['update 2 → 1', 'add 1898207907']);
+  });
+
+  it('leaves an earlier cart’s gift alone', async () => {
+    remember({ cartId: '12', id: 417224696, options: {} });
+    const cart = fakeCart([TINT_LINE, { id: 2, product_id: 417224696, quantity: 1 }]);
+    await placeGift(cart, { id: 417224696, options: {} });
+    expect(cart.calls).toEqual(['add 417224696']);
+  });
+
+  it('tells the fragrance colours apart', () => {
+    const black = { id: 5, product_id: 1033697530, options: [{ id: 1115672946, details: [{ id: 1628906379, is_selected: true }] }] };
+    const white = { id: 6, product_id: 1033697530, options: [{ id: 1115672946, value: 855392916 }] };
+    const data = { cart: { items: [black, white] } };
+    const placed = (value: number) => ({ cartId: '1', id: 1033697530, options: { '1115672946': value } });
+    expect(placedGiftLine(data, placed(855392916))?.id).toBe(6);
+    expect(placedGiftLine(data, placed(1628906379))?.id).toBe(5);
   });
 });

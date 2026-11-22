@@ -295,14 +295,26 @@ export function AddToCartForm({ product, formRef, addRef }: AddToCartFormProps) 
         const { setup, choice } = giftRef.current;
         const cart = sdk()?.cart;
         const details = sdk()?.api?.cart?.details;
-        if (!setup.active || !choice || !cart?.addItem || !cart.deleteItem || !details) {
+        if (
+          !setup.active ||
+          !choice ||
+          !cart?.addItem ||
+          !cart.deleteItem ||
+          !cart.updateItem ||
+          !details
+        ) {
           checkout();
           return;
         }
         placeGift(
-          { details, deleteItem: cart.deleteItem, addItem: cart.addItem },
-          choice,
-          setup.giftIds
+          {
+            // with each line's options, to tell the gift's line apart
+            details: () => details(null, ['options']),
+            deleteItem: cart.deleteItem,
+            updateItem: cart.updateItem,
+            addItem: cart.addItem,
+          },
+          choice
         )
           .then(checkout)
           .catch((error) => {

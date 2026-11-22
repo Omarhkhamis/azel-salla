@@ -211,6 +211,7 @@ describe('AddToCartForm buttons', () => {
 
 describe('AddToCartForm gift picker («اختر هديتك»)', () => {
   const TINT = 1224786269;
+  afterEach(() => window.localStorage.clear());
   const giftSettings = () => ({
     gift_for_products: [{ id: TINT }],
     gift_products: [1033697530, 417224696, 1898207907],
@@ -230,12 +231,21 @@ describe('AddToCartForm gift picker («اختر هديتك»)', () => {
       cart: {
         addItem: vi.fn(async (item: { id: number }) => void calls.push(`add ${item.id}`)),
         deleteItem: vi.fn(async (id: unknown) => void calls.push(`delete ${id}`)),
+        updateItem: vi.fn(async (item: { id: unknown }) => void calls.push(`update ${item.id}`)),
         submit: vi.fn(() => calls.push('checkout')),
       },
       api: {
         cart: {
           details: vi.fn(async () => ({
-            data: { cart: { items: [{ id: 50, product_id: TINT }, { id: 51, product_id: 417224696 }] } },
+            data: {
+              cart: {
+                id: 77,
+                items: [
+                  { id: 50, product_id: TINT, quantity: 1 },
+                  { id: 51, product_id: 417224696, quantity: 1 },
+                ],
+              },
+            },
           })),
         },
       },
@@ -288,8 +298,9 @@ describe('AddToCartForm gift picker («اختر هديتك»)', () => {
     expect(salla.form.onSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it('adds the gift after the package, replacing the gift already in the cart', async () => {
+  it('adds the gift after the package, replacing the gift it placed in this cart', async () => {
     settings = giftSettings();
+    window.localStorage.setItem('azel:gift', JSON.stringify({ cartId: '77', id: 417224696, options: {} }));
     const { salla, calls, handlers } = installSdk();
     const { container } = renderForm(makeProduct({ id: TINT, is_hidden_quantity: true } as Partial<Product>));
     await waitFor(() => expect(container.querySelectorAll('.gift-card:not(.is-loading)')).toHaveLength(3));
@@ -320,7 +331,8 @@ describe('AddToCartForm gift picker («اختر هديتك»)', () => {
     fireEvent.click(container.querySelectorAll('.gift-card')[1]);
     fireEvent.click(container.querySelector('#buy-now')!);
     await act(async () => handlers['cart::item.added']({}, TINT));
-    await waitFor(() => expect(calls).toEqual(['submit form', 'delete 51', 'add 417224696', 'checkout']));
+    // the tracker in the cart was not placed by the picker: it stays
+    await waitFor(() => expect(calls).toEqual(['submit form', 'add 417224696', 'checkout']));
   });
 
   it('adds no gift when the picker is optional and none was chosen', async () => {

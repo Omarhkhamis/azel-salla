@@ -21,7 +21,9 @@ export interface AzelSdk {
     submit?: () => unknown;
   };
   api?: {
-    cart?: { details?: () => Promise<{ data?: unknown }> };
+    cart?: {
+      details?: (cartId?: number | null, withItems?: string[]) => Promise<{ data?: unknown }>;
+    };
   };
   logger?: { error?: (...args: unknown[]) => void };
 }
