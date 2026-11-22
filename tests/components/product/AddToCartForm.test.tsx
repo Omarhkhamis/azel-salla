@@ -235,6 +235,7 @@ describe('AddToCartForm gift picker («اختر هديتك»)', () => {
       },
       api: {
         cart: {
+          getCurrentCartId: vi.fn(async () => 77),
           details: vi.fn(async () => ({
             data: {
               cart: {
@@ -353,5 +354,26 @@ describe('AddToCartForm gift picker («اختر هديتك»)', () => {
     fireEvent.submit(container.querySelector('form')!);
     await act(async () => handlers['cart::item.added']({}, TINT));
     await waitFor(() => expect(salla.cart.addItem).toHaveBeenCalledWith({ id: 417224696, quantity: 2 }));
+  });
+
+  it('notes the gifts it added against the cart', async () => {
+    window.localStorage.clear();
+    settings = giftSettings();
+    const { handlers } = installSdk();
+    const { container } = renderForm(makeProduct({ id: TINT, is_hidden_quantity: true } as Partial<Product>));
+    await waitFor(() => expect(container.querySelectorAll('.gift-card:not(.is-loading)')).toHaveLength(3));
+    fireEvent.click(container.querySelectorAll('.gift-card')[1]);
+    container.querySelector<HTMLInputElement>('input[name="quantity"]')!.value = '2';
+    fireEvent.submit(container.querySelector('form')!);
+    await act(async () => handlers['cart::item.added']({}, TINT));
+    await waitFor(() =>
+      expect(JSON.parse(window.localStorage.getItem('azel:gifts') ?? 'null')).toEqual({
+        cartId: '77',
+        units: [
+          { id: 417224696, options: {} },
+          { id: 417224696, options: {} },
+        ],
+      })
+    );
   });
 });

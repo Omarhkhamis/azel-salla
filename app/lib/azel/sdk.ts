@@ -16,12 +16,15 @@ export interface AzelSdk {
       quantity: number;
       options?: Record<string, number>;
     }) => Promise<unknown>;
-    updateItem?: (item: { id: unknown; quantity: number }) => Promise<unknown>;
+    updateItem?: (item: { id: unknown; quantity: number; options?: Record<string, number> }) => Promise<unknown>;
     deleteItem?: (id: unknown) => Promise<unknown>;
     submit?: () => unknown;
   };
   api?: {
-    cart?: { details?: () => Promise<{ data?: unknown }> };
+    cart?: {
+      details?: (cartId?: number | null, withItems?: string[]) => Promise<{ data?: unknown }>;
+      getCurrentCartId?: () => Promise<number | string | null | undefined>;
+    };
   };
   logger?: { error?: (...args: unknown[]) => void };
 }

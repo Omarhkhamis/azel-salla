@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
+import { pickedIds } from '../../lib/azel/gift';
 import { gradesFromSettings } from '../../lib/azel/tint';
 import { localizeDigits } from '../../lib/azel/utils';
 
@@ -35,4 +36,19 @@ export function useNum() {
 export function useHideSoldOut() {
   const get = useSettings();
   return get('hide_sold_out', true) !== false;
+}
+
+/** The products that come with a gift (`gift_for_products`), when gifts are set up at all. */
+export function usePackageIds(): number[] {
+  const get = useSettings();
+  const forIds = pickedIds(get('gift_for_products'));
+  return pickedIds(get('gift_products')).length ? forIds : [];
+}
+
+/**
+ * A package that comes with a gift is added from its product page, where the
+ * customer picks the gift: the cart lets its quantity go down, not up.
+ */
+export function usePackageLock(productId: unknown): boolean {
+  return usePackageIds().includes(Number(productId));
 }

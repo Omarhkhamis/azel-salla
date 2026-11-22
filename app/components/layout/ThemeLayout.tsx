@@ -6,6 +6,7 @@ import { useUser } from '@salla.sa/twilight-theme-engine/hooks/useUser';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { useSettings } from '../azel/useAzel';
+import { GiftSync } from './GiftSync';
 import { fillComponentTranslations, type ComponentLang } from '../../lib/componentTranslations';
 import { hexColor, digitsOnly } from '../../lib/azel/utils';
 import { CartDrawerProvider } from './CartDrawer';
@@ -169,6 +170,7 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
         </div>
         <WhatsAppFloat />
         <Toasts />
+        <GiftSync />
         {/* Salla's search, which apps open with `search::open`. In the frame, not the header:
             the Salla mobile app hides the theme's header. The header's own button opens
             the Azel search panel. */}

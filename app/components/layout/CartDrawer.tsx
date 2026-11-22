@@ -13,7 +13,7 @@ import { useMoney } from '@salla.sa/twilight-theme-engine/hooks/useMoney';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useLocation, useNavigate } from '@salla.sa/twilight-theme-engine/providers';
 import { Icon } from '../azel/Icon';
-import { useSettings } from '../azel/useAzel';
+import { usePackageLock, useSettings } from '../azel/useAzel';
 import { useLayers } from './Layers';
 import placeholderUrl from '../../assets/placeholder.png';
 import { buyNow } from '../../lib/azel/buy-now';
@@ -28,6 +28,7 @@ interface DrawerItemOption {
 
 interface DrawerItem {
   id: string | number;
+  product_id?: string | number;
   url?: string;
   name?: string;
   product_name?: string;
@@ -145,6 +146,8 @@ function DrawerRow({
   const { format } = useMoney();
   const meta = itemOptions(item);
   const locked = item.is_hidden_quantity || item.type === 'donating';
+  // a gift package grows from its product page only (where its gift is picked)
+  const lockUp = usePackageLock(item.product_id);
   const url = item.url ?? '#';
   return (
     <div className={`mini-item${busy ? ' busy' : ''}`}>
@@ -162,7 +165,12 @@ function DrawerRow({
         {meta && <div className="meta">{meta}</div>}
         {!locked && (
           <div className="qty sm">
-            <button type="button" aria-label={t('azel.cart.more')} onClick={() => onStep(item, 1)}>
+            <button
+              type="button"
+              aria-label={t('azel.cart.more')}
+              disabled={lockUp}
+              onClick={() => onStep(item, 1)}
+            >
               <Icon name="plus" className="i-xs" />
             </button>
             <b>{item.quantity}</b>
@@ -171,6 +179,7 @@ function DrawerRow({
             </button>
           </div>
         )}
+        {!locked && lockUp && <p className="gift-lock-note">{t('azel.gift.cart_note')}</p>}
       </div>
       <div className="mi-end">
         <div className="price">
@@ -242,8 +251,23 @@ export function CartDrawerProvider({ children }: { children: ReactNode }) {
             void loadCart();
           }
         };
+        // the cart changed elsewhere (the cart page, or gifts trimmed by GiftSync)
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const onChanged = () => {
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            if (!busyRef.current) void loadCart();
+          }, 300);
+        };
         event?.on?.('cart::item.added', onAdded);
-        return () => event?.off?.('cart::item.added', onAdded);
+        event?.on?.('cart::item.updated', onChanged);
+        event?.on?.('cart::item.deleted', onChanged);
+        return () => {
+          clearTimeout(timer);
+          event?.off?.('cart::item.added', onAdded);
+          event?.off?.('cart::item.updated', onChanged);
+          event?.off?.('cart::item.deleted', onChanged);
+        };
       }),
     [openDrawer, loadCart]
   );

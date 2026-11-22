@@ -5,6 +5,7 @@ import { useMoney } from '@salla.sa/twilight-theme-engine/hooks/useMoney';
 import { Link, Image } from '@salla.sa/twilight-theme-engine/common';
 import { SallaCartItemOffers } from '@salla.sa/twilight-components-react/cart-item-offers';
 import { Delete01Icon, MinusIcon, PlusIcon } from '../icons';
+import { usePackageLock } from '../azel/useAzel';
 
 interface CartItemProps {
   item: CartItemType;
@@ -203,6 +204,8 @@ function CartItemQuantity({
   onChange: (quantity: number) => Promise<void>;
 }) {
   const { t } = useTranslation();
+  // a gift package grows from its product page only (where its gift is picked)
+  const lockUp = usePackageLock(item.product_id);
 
   if (item.type === 'donating') return <span></span>;
 
@@ -223,7 +226,7 @@ function CartItemQuantity({
   return (
     <CartQuantity
       value={item.quantity}
-      max={item.max_quantity ?? undefined}
+      max={lockUp ? item.quantity : (item.max_quantity ?? undefined)}
       label={t('pages.products.quantity', 'Quantity')}
       disabled={disabled}
       onChange={onChange}
@@ -247,6 +250,7 @@ function cartItemTotalLabel(
 
 export function CartItem({ item, isFirst = false, onMutated }: CartItemProps) {
   const { t } = useTranslation();
+  const giftPackage = usePackageLock(item.product_id);
   const { format } = useMoney();
   const [deleting, setDeleting] = useState(false);
   // Set once the item is deleted with no `onMutated` to refetch the cart.
@@ -352,6 +356,10 @@ export function CartItem({ item, isFirst = false, onMutated }: CartItemProps) {
             </button>
           </div>
         </div>
+
+        {giftPackage && !item.is_hidden_quantity && (
+          <p className="gift-lock-note">{t('azel.gift.cart_note')}</p>
+        )}
 
         {item.options && item.options.length > 0 && (
           // Raw element, not the React wrapper: the wrapper assigns `options` after the

@@ -191,5 +191,6 @@
   "azel.gift.title": "Choose your free gift",
   "azel.gift.error": "Please choose your gift before adding to cart.",
   "azel.gift.option_error": "Please choose the gift’s :name.",
-  "azel.gift.failed": "The package is in your cart, but the gift could not be added. Contact us and we will add it to your order."
+  "azel.gift.failed": "The package is in your cart, but the gift could not be added. Contact us and we will add it to your order.",
+  "azel.gift.cart_note": "To add another package, add it from its product page to choose its gift."
 }

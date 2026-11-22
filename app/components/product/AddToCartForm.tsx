@@ -20,7 +20,13 @@ import { useSettings } from '../azel/useAzel';
 import { GiftPicker, useGiftOptions, useGifts, type GiftSetup } from './GiftPicker';
 import { TintPickers } from './TintPickers';
 import { buyNow } from '../../lib/azel/buy-now';
-import { missingOption, placeGift, type GiftChoice, type GiftOption } from '../../lib/azel/gift';
+import {
+  missingOption,
+  placeGift,
+  recordGifts,
+  type GiftChoice,
+  type GiftOption,
+} from '../../lib/azel/gift';
 import { sdk, whenSdkReady } from '../../lib/azel/sdk';
 import { showToast } from '../../lib/azel/toast';
 
@@ -302,6 +308,11 @@ export function AddToCartForm({ product, formRef, addRef }: AddToCartFormProps) 
         const form = formRef.current;
         const packages = form ? Number(new FormData(form).get('quantity')) || 1 : 1;
         placeGift({ addItem }, choice, packages)
+          .then(async () => {
+            // noted, so a later change in the cart can keep gifts and packages in step
+            const cartId = await sdk()?.api?.cart?.getCurrentCartId?.();
+            recordGifts(cartId, choice, packages);
+          })
           .then(checkout)
           .catch((error) => {
             sdk()?.logger?.error?.('azel:: gift', error);

@@ -261,3 +261,7 @@
   .sticky-buy .price{font-size:20px}
   .sticky-buy .btn{flex:1;height:48px}
 }
+
+/* cart and drawer: a gift package grows from its product page only */
+.gift-lock-note{flex-basis:100%;margin-top:6px;font-size:12px;line-height:1.5;color:var(--muted)}
+.qty button:disabled{opacity:.35;cursor:not-allowed}

@@ -3,6 +3,11 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import type { CartItem as CartItemType } from '@salla.sa/twilight-theme-engine/types';
 import { CartItem } from '../../../app/components/cart/CartItem';
 
+let settings: Record<string, unknown> = {};
+vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
+  useTwilight: () => ({ store: { settings: {} }, theme: { settings } }),
+}));
+
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
@@ -122,5 +127,28 @@ describe('CartItem delete', () => {
     });
     expect(deleteItem).toHaveBeenCalledWith(1);
     expect(container.querySelector('#item-1')).toBeNull();
+  });
+});
+
+describe('CartItem gift package', () => {
+  afterEach(() => {
+    settings = {};
+  });
+
+  const pkg = { ...item, quantity: 2 } as CartItemType;
+
+  it('lets a package that comes with a gift go down, not up, and says why', () => {
+    settings = { gift_for_products: [2], gift_products: [417224696] };
+    render(<CartItem item={pkg} />);
+    expect((screen.getByLabelText('pages.products.quantity +') as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByLabelText('pages.products.quantity -') as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.getByText('azel.gift.cart_note')).toBeTruthy();
+  });
+
+  it('leaves other products, and packages without gifts set up, alone', () => {
+    settings = { gift_for_products: [2], gift_products: [] };
+    render(<CartItem item={pkg} />);
+    expect((screen.getByLabelText('pages.products.quantity +') as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.queryByText('azel.gift.cart_note')).toBeNull();
   });
 });
