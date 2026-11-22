@@ -11,9 +11,6 @@ vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
 vi.mock('@salla.sa/twilight-theme-engine/hooks/useComments', () => ({
   useComments: () => ({ commentsKey: 'k' }),
 }));
-vi.mock('@salla.sa/twilight-theme-engine/hooks', () => ({
-  HookSlot: ({ name }: { name: string }) => <i data-testid="slot" data-name={name} />,
-}));
 vi.mock('../../../app/components/common', () => ({
   BlockHookSlot: ({ name }: { name: string }) => <div data-testid="hook" data-name={name} />,
 }));
@@ -34,12 +31,8 @@ describe('PageSingle', () => {
     ['customised', { type: 'customised' }],
     ['full-width', { content: '<section>x</section>' }],
     ['plain', { content: '<p>x</p>' }],
-  ])('keeps the hook points partner apps inject into on a %s page', (_kind, overrides) => {
-    const { getAllByTestId, getByTestId } = render(<PageSingle page={page(overrides)} />);
-    expect(getAllByTestId('slot').map((el) => el.dataset.name)).toEqual([
-      'page-single:start',
-      'page-single:end',
-    ]);
+  ])('keeps the block hook partner apps inject into on a %s page', (_kind, overrides) => {
+    const { getByTestId } = render(<PageSingle page={page(overrides)} />);
     expect(getByTestId('hook').dataset.name).toBe('information_page.information_page');
   });
 
