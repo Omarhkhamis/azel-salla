@@ -211,7 +211,6 @@ describe('AddToCartForm buttons', () => {
 
 describe('AddToCartForm gift picker («اختر هديتك»)', () => {
   const TINT = 1224786269;
-  afterEach(() => window.localStorage.clear());
   const giftSettings = () => ({
     gift_for_products: [{ id: TINT }],
     gift_products: [1033697530, 417224696, 1898207907],
@@ -298,9 +297,8 @@ describe('AddToCartForm gift picker («اختر هديتك»)', () => {
     expect(salla.form.onSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it('adds the gift after the package, replacing the gift it placed in this cart', async () => {
+  it('adds the gift after the package, leaving what is already in the cart', async () => {
     settings = giftSettings();
-    window.localStorage.setItem('azel:gift', JSON.stringify({ cartId: '77', id: 417224696, options: {} }));
     const { salla, calls, handlers } = installSdk();
     const { container } = renderForm(makeProduct({ id: TINT, is_hidden_quantity: true } as Partial<Product>));
     await waitFor(() => expect(container.querySelectorAll('.gift-card:not(.is-loading)')).toHaveLength(3));
@@ -310,7 +308,7 @@ describe('AddToCartForm gift picker («اختر هديتك»)', () => {
     fireEvent.submit(container.querySelector('form')!);
 
     await act(async () => handlers['cart::item.added']({}, TINT));
-    await waitFor(() => expect(calls).toEqual(['submit form', 'delete 51', 'add 1033697530']));
+    await waitFor(() => expect(calls).toEqual(['submit form', 'add 1033697530']));
     expect(salla.cart.addItem).toHaveBeenCalledWith({
       id: 1033697530,
       quantity: 1,
@@ -331,7 +329,6 @@ describe('AddToCartForm gift picker («اختر هديتك»)', () => {
     fireEvent.click(container.querySelectorAll('.gift-card')[1]);
     fireEvent.click(container.querySelector('#buy-now')!);
     await act(async () => handlers['cart::item.added']({}, TINT));
-    // the tracker in the cart was not placed by the picker: it stays
     await waitFor(() => expect(calls).toEqual(['submit form', 'add 417224696', 'checkout']));
   });
 
@@ -344,5 +341,17 @@ describe('AddToCartForm gift picker («اختر هديتك»)', () => {
     expect(salla.form.onSubmit).toHaveBeenCalledTimes(1);
     await act(async () => handlers['cart::item.added']({}, TINT));
     expect(salla.cart.addItem).not.toHaveBeenCalled();
+  });
+
+  it('adds one gift for every package in the add', async () => {
+    settings = giftSettings();
+    const { salla, handlers } = installSdk();
+    const { container } = renderForm(makeProduct({ id: TINT, is_hidden_quantity: true } as Partial<Product>));
+    await waitFor(() => expect(container.querySelectorAll('.gift-card:not(.is-loading)')).toHaveLength(3));
+    fireEvent.click(container.querySelectorAll('.gift-card')[1]);
+    container.querySelector<HTMLInputElement>('input[name="quantity"]')!.value = '2';
+    fireEvent.submit(container.querySelector('form')!);
+    await act(async () => handlers['cart::item.added']({}, TINT));
+    await waitFor(() => expect(salla.cart.addItem).toHaveBeenCalledWith({ id: 417224696, quantity: 2 }));
   });
 });

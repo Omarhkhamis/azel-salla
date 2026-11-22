@@ -1,13 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { afterEach } from 'vitest';
-import {
-  giftOptions,
-  missingOption,
-  pickedIds,
-  placeGift,
-  placedGiftLine,
-  readPlacedGift,
-} from '../../../app/lib/azel/gift';
+import { giftOptions, missingOption, pickedIds, placeGift } from '../../../app/lib/azel/gift';
 
 describe('pickedIds', () => {
   it('reads a product picker in every shape it arrives in', () => {
@@ -59,37 +51,9 @@ describe('giftOptions / missingOption', () => {
 });
 
 describe('placeGift', () => {
-  afterEach(() => window.localStorage.clear());
-
-  const TINT_LINE = { id: 1, product_id: 1224786269, quantity: 1 };
-  /** A cart stand-in that records its calls in order. */
-  function fakeCart(items: object[], cartId = 77) {
-    const calls: string[] = [];
-    return {
-      calls,
-      details: vi.fn(async () => ({ data: { cart: { id: cartId, items } } })),
-      deleteItem: vi.fn(async (id: unknown) => void calls.push(`delete ${id}`)),
-      updateItem: vi.fn(
-        async (item: { id: unknown; quantity: number }) => void calls.push(`update ${item.id} → ${item.quantity}`)
-      ),
-      addItem: vi.fn(async (item: { id: number }) => void calls.push(`add ${item.id}`)),
-    };
-  }
-  const remember = (gift: object) => window.localStorage.setItem('azel:gift', JSON.stringify(gift));
-
-  it('adds the gift next to a paid one the customer put in the cart themselves', async () => {
-    const cart = fakeCart([TINT_LINE, { id: 2, product_id: 417224696, quantity: 1 }]);
-    await placeGift(cart, { id: 417224696, options: {} });
-    expect(cart.calls).toEqual(['add 417224696']);
-    expect(cart.addItem).toHaveBeenCalledWith({ id: 417224696, quantity: 1 });
-    expect(readPlacedGift()).toEqual({ cartId: '77', id: 417224696, options: {} });
-  });
-
-  it('replaces the gift it placed in this cart', async () => {
-    remember({ cartId: '77', id: 417224696, options: {} });
-    const cart = fakeCart([TINT_LINE, { id: 2, product_id: 417224696, quantity: 1 }]);
+  it('adds the gift as its own line with its options', async () => {
+    const cart = { addItem: vi.fn(async () => undefined) };
     await placeGift(cart, { id: 1033697530, options: { '1115672946': 855392916 } });
-    expect(cart.calls).toEqual(['delete 2', 'add 1033697530']);
     expect(cart.addItem).toHaveBeenCalledWith({
       id: 1033697530,
       quantity: 1,
@@ -97,26 +61,15 @@ describe('placeGift', () => {
     });
   });
 
-  it('takes only one off a line that holds a paid one and the gift', async () => {
-    remember({ cartId: '77', id: 417224696, options: {} });
-    const cart = fakeCart([TINT_LINE, { id: 2, product_id: 417224696, quantity: 2 }]);
-    await placeGift(cart, { id: 1898207907, options: {} });
-    expect(cart.calls).toEqual(['update 2 → 1', 'add 1898207907']);
+  it('adds one gift for every package', async () => {
+    const cart = { addItem: vi.fn(async () => undefined) };
+    await placeGift(cart, { id: 417224696, options: {} }, 2);
+    expect(cart.addItem).toHaveBeenCalledWith({ id: 417224696, quantity: 2 });
   });
 
-  it('leaves an earlier cart’s gift alone', async () => {
-    remember({ cartId: '12', id: 417224696, options: {} });
-    const cart = fakeCart([TINT_LINE, { id: 2, product_id: 417224696, quantity: 1 }]);
-    await placeGift(cart, { id: 417224696, options: {} });
-    expect(cart.calls).toEqual(['add 417224696']);
-  });
-
-  it('tells the fragrance colours apart', () => {
-    const black = { id: 5, product_id: 1033697530, options: [{ id: 1115672946, details: [{ id: 1628906379, is_selected: true }] }] };
-    const white = { id: 6, product_id: 1033697530, options: [{ id: 1115672946, value: 855392916 }] };
-    const data = { cart: { items: [black, white] } };
-    const placed = (value: number) => ({ cartId: '1', id: 1033697530, options: { '1115672946': value } });
-    expect(placedGiftLine(data, placed(855392916))?.id).toBe(6);
-    expect(placedGiftLine(data, placed(1628906379))?.id).toBe(5);
+  it('never adds fewer than one', async () => {
+    const cart = { addItem: vi.fn(async () => undefined) };
+    await placeGift(cart, { id: 417224696, options: {} }, 0);
+    expect(cart.addItem).toHaveBeenCalledWith({ id: 417224696, quantity: 1 });
   });
 });

@@ -1,6 +1,6 @@
 /**
  * «اختر هديتك»: a free gift picked on the product page and added to the cart as
- * its own product, so the shipping company receives its real code (GPS, CC09,
+ * its own product, one per package, so the shipping company receives its real code (GPS, CC09,
  * CY04…). Its price is the store's business: a "buy X get Y" offer in Salla makes
  * it 0 while the package is in the cart.
  */
@@ -62,99 +62,17 @@ export function missingOption(choice: GiftChoice, options: GiftOption[]): GiftOp
   return options.find((o) => o.required && !choice.options[String(o.id)]) ?? null;
 }
 
-interface CartLineOption {
-  id?: unknown;
-  value?: unknown;
-  details?: { id?: unknown; is_selected?: unknown }[];
-}
-
-interface CartLine {
-  id?: unknown;
-  product_id?: unknown;
-  quantity?: unknown;
-  options?: CartLineOption[];
-}
-
 export interface GiftCart {
-  /** Salla's cart details, with each line's options. */
-  details: () => Promise<{ data?: unknown } | undefined>;
-  deleteItem: (id: unknown) => Promise<unknown>;
-  updateItem: (item: { id: unknown; quantity: number }) => Promise<unknown>;
   addItem: (item: { id: number; quantity: number; options?: Record<string, number> }) => Promise<unknown>;
 }
 
-/** The gift the theme put in a cart, remembered so a new choice replaces only that one. */
-export interface PlacedGift {
-  cartId: string;
-  id: number;
-  options: Record<string, number>;
-}
-
-const PLACED_KEY = 'azel:gift';
-
-export function readPlacedGift(): PlacedGift | null {
-  try {
-    const raw = window.localStorage.getItem(PLACED_KEY);
-    return raw ? (JSON.parse(raw) as PlacedGift) : null;
-  } catch {
-    return null;
-  }
-}
-
-function savePlacedGift(gift: PlacedGift) {
-  try {
-    window.localStorage.setItem(PLACED_KEY, JSON.stringify(gift));
-  } catch {
-    /* private mode: a later choice adds rather than replaces */
-  }
-}
-
-function cartOf(data: unknown): { id?: unknown; items?: CartLine[] } {
-  const d = data as { cart?: { id?: unknown; items?: CartLine[] }; id?: unknown; items?: CartLine[] } | undefined;
-  return d?.cart ?? d ?? {};
-}
-
-/** A line's option holds this value: the picked detail, or the option's own value. */
-function hasValue(line: CartLine, optionId: string, valueId: number) {
-  const option = (line.options ?? []).find((o) => String(o.id) === optionId);
-  if (!option) return false;
-  if (String(option.value) === String(valueId)) return true;
-  return (option.details ?? []).some((d) => String(d.id) === String(valueId) && !!d.is_selected);
-}
-
 /**
- * The cart line holding the gift the theme placed: same product, and the same
- * option values when the line reports its options.
+ * Puts the gift in the cart as its own line: one gift for every package just
+ * added, so two packages bring two gifts (one each, as the store's offer gives).
+ * Nothing already in the cart is touched.
  */
-export function placedGiftLine(data: unknown, placed: PlacedGift): CartLine | null {
-  const lines = (cartOf(data).items ?? []).filter((line) => Number(line.product_id) === placed.id);
-  const optionIds = Object.keys(placed.options);
-  return (
-    lines.find((line) =>
-      optionIds.every((id) => !line.options?.length || hasValue(line, id, placed.options[id]))
-    ) ?? null
-  );
-}
-
-/**
- * Puts the gift in the cart. The gift the theme placed earlier in this same cart
- * comes out first, so a new choice replaces it instead of adding a second gift.
- * Anything else stays: a product the customer bought themselves is never touched,
- * and when Salla keeps a paid one and the gift on one line, only one comes off it.
- */
-export async function placeGift(cart: GiftCart, choice: GiftChoice) {
-  const current = await cart.details();
-  const cartId = String(cartOf(current?.data).id ?? '');
-  const placed = readPlacedGift();
-  if (placed && cartId && placed.cartId === cartId) {
-    const line = placedGiftLine(current?.data, placed);
-    const quantity = Number(line?.quantity) || 1;
-    if (line?.id != null) {
-      if (quantity > 1) await cart.updateItem({ id: line.id, quantity: quantity - 1 });
-      else await cart.deleteItem(line.id);
-    }
-  }
+export async function placeGift(cart: GiftCart, choice: GiftChoice, packages = 1) {
+  const quantity = Math.max(1, Math.floor(Number(packages)) || 1);
   const options = Object.keys(choice.options).length ? { options: choice.options } : {};
-  await cart.addItem({ id: choice.id, quantity: 1, ...options });
-  savePlacedGift({ cartId, id: choice.id, options: choice.options });
+  await cart.addItem({ id: choice.id, quantity, ...options });
 }

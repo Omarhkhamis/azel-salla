@@ -293,29 +293,15 @@ export function AddToCartForm({ product, formRef, addRef }: AddToCartFormProps) 
         if (addedId != null && String(addedId) !== String(product.id)) return;
         stop();
         const { setup, choice } = giftRef.current;
-        const cart = sdk()?.cart;
-        const details = sdk()?.api?.cart?.details;
-        if (
-          !setup.active ||
-          !choice ||
-          !cart?.addItem ||
-          !cart.deleteItem ||
-          !cart.updateItem ||
-          !details
-        ) {
+        const addItem = sdk()?.cart?.addItem;
+        if (!setup.active || !choice || !addItem) {
           checkout();
           return;
         }
-        placeGift(
-          {
-            // with each line's options, to tell the gift's line apart
-            details: () => details(null, ['options']),
-            deleteItem: cart.deleteItem,
-            updateItem: cart.updateItem,
-            addItem: cart.addItem,
-          },
-          choice
-        )
+        // one gift for each package just added: the quantity the form sent
+        const form = formRef.current;
+        const packages = form ? Number(new FormData(form).get('quantity')) || 1 : 1;
+        placeGift({ addItem }, choice, packages)
           .then(checkout)
           .catch((error) => {
             sdk()?.logger?.error?.('azel:: gift', error);
