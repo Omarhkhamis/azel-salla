@@ -17,9 +17,12 @@ import { hapticImpact } from '@salla.sa/twilight-theme-engine/native-app';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { Icon } from '../azel/Icon';
 import { useSettings } from '../azel/useAzel';
+import { GiftPicker, useGiftOptions, useGifts, type GiftSetup } from './GiftPicker';
 import { TintPickers } from './TintPickers';
 import { buyNow } from '../../lib/azel/buy-now';
+import { missingOption, placeGift, type GiftChoice, type GiftOption } from '../../lib/azel/gift';
 import { sdk, whenSdkReady } from '../../lib/azel/sdk';
+import { showToast } from '../../lib/azel/toast';
 
 /** The web component's `type="submit"` path skips its own loader, so drive the
     inner `<salla-button>` spinner by hand. */
@@ -28,17 +31,6 @@ const addButton = (form: HTMLFormElement | null): LoadableButton | null =>
   (form?.querySelector('salla-button') as LoadableButton | null) ?? null;
 
 type ProductOptionsElement = HTMLElement & { validateAndScroll?: () => Promise<boolean> };
-
-const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  hapticImpact('medium');
-  const btn = addButton(e.currentTarget);
-  btn?.load?.();
-  // Safety net: the cart events clear it on a real response; this covers a
-  // silent validation bail (`salla.form.onSubmit` returns `false` either way).
-  window.setTimeout(() => btn?.stop?.(), 8000);
-  window.salla?.form.onSubmit('cart.addItem', e);
-};
 
 const handleChange = (e: React.FormEvent<HTMLFormElement>) => {
   const form = e.currentTarget;
@@ -223,17 +215,101 @@ export function AddToCartForm({ product, formRef, addRef }: AddToCartFormProps) 
     setBuying(false);
   }, []);
 
+  // «اختر هديتك»: the picked gift goes to the cart as its own product, after this one.
+  const gifts = useGifts(product.id);
+  const [giftChoice, setGiftChoice] = useState<GiftChoice | null>(null);
+  const [giftError, setGiftError] = useState<string | null>(null);
+  const giftBoxRef = useRef<HTMLDivElement>(null);
+  const pickedGift = gifts.gifts.find((g) => Number(g.id) === giftChoice?.id);
+  const { options: giftOptionList, loading: giftOptionsLoading } = useGiftOptions(pickedGift);
+  // The handlers below are bound once; they read the latest choice from here.
+  const giftRef = useRef<{
+    setup: GiftSetup;
+    choice: GiftChoice | null;
+    options: GiftOption[];
+    optionsLoading: boolean;
+  }>({ setup: gifts, choice: null, options: [], optionsLoading: false });
+  giftRef.current = {
+    setup: gifts,
+    choice: giftChoice,
+    options: giftOptionList,
+    optionsLoading: giftOptionsLoading,
+  };
+
+  /** Why the gift can't be added yet, or `null` when it can (or there is none to add). */
+  const giftProblem = useCallback((): string | null => {
+    const { setup, choice, options, optionsLoading } = giftRef.current;
+    if (!setup.active) return null;
+    if (!choice) return setup.required ? t('azel.gift.error') : null;
+    if (optionsLoading) return t('azel.gift.error');
+    const missing = missingOption(choice, options);
+    return missing ? t('azel.gift.option_error').replace(':name', missing.name) : null;
+  }, [t]);
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const problem = giftProblem();
+      if (problem) {
+        setGiftError(problem);
+        giftBoxRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+        release();
+        return;
+      }
+      hapticImpact('medium');
+      const btn = addButton(e.currentTarget);
+      btn?.load?.();
+      // Safety net: the cart events clear it on a real response; this covers a
+      // silent validation bail (`salla.form.onSubmit` returns `false` either way).
+      window.setTimeout(() => btn?.stop?.(), 8000);
+      window.salla?.form.onSubmit('cart.addItem', e);
+    },
+    [giftProblem, release]
+  );
+
+  const onGiftChange = (choice: GiftChoice) => {
+    setGiftChoice(choice);
+    setGiftError(null);
+  };
+
+  // Read by the cart handlers, which are bound once: re-binding them would run the
+  // cleanup's `release()` and drop «اشترِ الآن» mid-way.
+  const tRef = useRef(t);
+  tRef.current = t;
+
   // Stop the spinner once the cart answers. «اشترِ الآن» then goes straight to
   // checkout instead of the drawer.
   useEffect(() => {
     const dispose = whenSdkReady(() => {
       const event = sdk()?.event;
       const stop = () => addButton(formRef.current)?.stop?.();
-      const onAdded = () => {
-        stop();
+      const checkout = () => {
         if (!buyNow.active) return;
         event?.once?.('cart::submit.failed', release);
         sdk()?.cart?.submit?.();
+      };
+      const onAdded = (_response?: unknown, addedId?: unknown) => {
+        // The gift's own add fires this too: only this product's add goes on.
+        if (addedId != null && String(addedId) !== String(product.id)) return;
+        stop();
+        const { setup, choice } = giftRef.current;
+        const cart = sdk()?.cart;
+        const details = sdk()?.api?.cart?.details;
+        if (!setup.active || !choice || !cart?.addItem || !cart.deleteItem || !details) {
+          checkout();
+          return;
+        }
+        placeGift(
+          { details, deleteItem: cart.deleteItem, addItem: cart.addItem },
+          choice,
+          setup.giftIds
+        )
+          .then(checkout)
+          .catch((error) => {
+            sdk()?.logger?.error?.('azel:: gift', error);
+            showToast(tRef.current('azel.gift.failed'), 'error');
+            release();
+          });
       };
       const onFailed = () => {
         stop();
@@ -250,7 +326,7 @@ export function AddToCartForm({ product, formRef, addRef }: AddToCartFormProps) 
       dispose();
       release();
     };
-  }, [formRef, release]);
+  }, [formRef, release, product.id]);
 
   // stable ref: an inline arrow re-runs on every render and resets the user's selection
   const optionsRef = useCallback(
@@ -341,6 +417,15 @@ export function AddToCartForm({ product, formRef, addRef }: AddToCartFormProps) 
       {product.has_bundle_products && (
         <SallaMultipleBundleProduct bundleSections={JSON.stringify(product)} />
       )}
+
+      <GiftPicker
+        ref={giftBoxRef}
+        setup={gifts}
+        choice={giftChoice}
+        options={giftOptionList}
+        error={giftError}
+        onChange={onGiftChange}
+      />
 
       <WeightAndSizeGuide product={product} />
       <Attachments product={product} />

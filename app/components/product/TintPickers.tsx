@@ -248,7 +248,7 @@ export function TintPickers({ formRef }: { formRef: RefObject<HTMLFormElement | 
     const scrollTo = (el: Element | null) => {
       if (scrolled || !el) return;
       scrolled = true;
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
       timer = setTimeout(() => {
         scrolled = false;
       }, 400);

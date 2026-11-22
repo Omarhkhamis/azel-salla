@@ -11,7 +11,11 @@ export interface AzelSdk {
     setNotifier?: (fn: (message: unknown, type?: string, data?: unknown) => void) => void;
   };
   cart?: {
-    addItem?: (item: { id: number; quantity: number }) => Promise<unknown>;
+    addItem?: (item: {
+      id: number;
+      quantity: number;
+      options?: Record<string, number>;
+    }) => Promise<unknown>;
     updateItem?: (item: { id: unknown; quantity: number }) => Promise<unknown>;
     deleteItem?: (id: unknown) => Promise<unknown>;
     submit?: () => unknown;

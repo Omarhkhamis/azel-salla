@@ -187,5 +187,9 @@
   "azel.product.tab_shipping": "الشحن والاسترجاع",
   "azel.product.shipping": "الشحن",
   "azel.product.returns": "الاسترجاع",
-  "azel.product.related": "منتجات قد تعجبك"
+  "azel.product.related": "منتجات قد تعجبك",
+  "azel.gift.title": "اختر هديتك المجانية",
+  "azel.gift.error": "فضلاً اختر هديتك قبل الإضافة للسلة.",
+  "azel.gift.option_error": "فضلاً اختر :name للهدية.",
+  "azel.gift.failed": "انضاف الباكج للسلة، لكن ما قدرنا نضيف الهدية. تواصل معنا ونضيفها لطلبك."
 }

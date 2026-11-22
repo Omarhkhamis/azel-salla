@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest';
-import { render, waitFor, fireEvent } from '@testing-library/react';
+import { render, waitFor, fireEvent, act } from '@testing-library/react';
 import { createRef } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { AddToCartForm } from '../../../app/components/product/AddToCartForm';
 import { buyNow } from '../../../app/lib/azel/buy-now';
@@ -17,6 +18,46 @@ vi.mock('@salla.sa/twilight-theme-engine/hooks/useWishlist', () => ({
   useWishlist: () => ({ has: () => false, toggle: vi.fn() }),
 }));
 vi.mock('@salla.sa/twilight-theme-engine/hooks', () => ({ HookSlot: () => null }));
+// The gift products, as the store's API sends them.
+const GIFTS = [
+  { id: '417224696', name: 'جهاز تتبع', image: { url: 'https://cdn/gps.jpg' }, has_options: false, is_out_of_stock: false },
+  { id: '1033697530', name: 'فواحة', image: { url: 'https://cdn/cy04.jpg' }, has_options: true, is_out_of_stock: false },
+  { id: '1898207907', name: 'مثبت جوال', image: { url: 'https://cdn/hms.jpg' }, has_options: false, is_out_of_stock: true },
+];
+const FRAGRANCE = {
+  id: 1033697530,
+  options: [
+    {
+      id: 1115672946,
+      name: 'اختر اللون',
+      required: true,
+      details: [
+        { id: 1628906379, name: 'أسود' },
+        { id: 855392916, name: 'أبيض' },
+      ],
+    },
+  ],
+};
+vi.mock('@salla.sa/twilight-theme-engine/api/product', () => ({
+  product: {
+    queries: {
+      list: (params: { sourceValue?: number[] }) => ({
+        queryKey: ['list', params.sourceValue],
+        queryFn: async () => ({
+          items: GIFTS.filter((g) => (params.sourceValue ?? []).includes(Number(g.id))),
+          next: null,
+        }),
+      }),
+      detail: (id: string) => ({
+        queryKey: ['detail', id],
+        queryFn: async () => (id === String(FRAGRANCE.id) ? FRAGRANCE : { id, options: [] }),
+      }),
+    },
+  },
+}));
+vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
+  Image: ({ src }: { src: string }) => <img src={src} alt="" />,
+}));
 // The pickers are tested on their own (TintPickers.test.tsx).
 vi.mock('../../../app/components/product/TintPickers', () => ({ TintPickers: () => null }));
 
@@ -63,7 +104,12 @@ const makeProduct = (overrides: Partial<Product> = {}): Product =>
 function renderForm(product: Product) {
   const formRef = createRef<HTMLFormElement>();
   const addRef = createRef<HTMLElement>();
-  const utils = render(<AddToCartForm product={product} formRef={formRef} addRef={addRef} />);
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const utils = render(
+    <QueryClientProvider client={client}>
+      <AddToCartForm product={product} formRef={formRef} addRef={addRef} />
+    </QueryClientProvider>
+  );
   return { ...utils, formRef, addRef };
 }
 
@@ -160,5 +206,131 @@ describe('AddToCartForm buttons', () => {
     fireEvent.click(container.querySelector('#buy-now')!);
     expect(onSubmit).not.toHaveBeenCalled();
     expect(buyNow.active).toBe(false);
+  });
+});
+
+describe('AddToCartForm gift picker («اختر هديتك»)', () => {
+  const TINT = 1224786269;
+  const giftSettings = () => ({
+    gift_for_products: [{ id: TINT }],
+    gift_products: [1033697530, 417224696, 1898207907],
+  });
+
+  /** A Salla SDK stand-in that records the cart calls in order. */
+  function installSdk() {
+    const calls: string[] = [];
+    const handlers: Record<string, (...a: unknown[]) => void> = {};
+    const salla = {
+      form: { onSubmit: vi.fn(() => calls.push('submit form')) },
+      event: {
+        on: (name: string, fn: (...a: unknown[]) => void) => (handlers[name] = fn),
+        off: vi.fn(),
+        once: vi.fn(),
+      },
+      cart: {
+        addItem: vi.fn(async (item: { id: number }) => void calls.push(`add ${item.id}`)),
+        deleteItem: vi.fn(async (id: unknown) => void calls.push(`delete ${id}`)),
+        submit: vi.fn(() => calls.push('checkout')),
+      },
+      api: {
+        cart: {
+          details: vi.fn(async () => ({
+            data: { cart: { items: [{ id: 50, product_id: TINT }, { id: 51, product_id: 417224696 }] } },
+          })),
+        },
+      },
+    };
+    (window as unknown as { salla: unknown }).salla = salla;
+    return { salla, calls, handlers };
+  }
+
+  it('shows nothing on a product that is not set to offer a gift', () => {
+    settings = giftSettings();
+    const { container } = renderForm(makeProduct({ id: 999 } as Partial<Product>));
+    expect(container.querySelector('#opt-gift')).toBeNull();
+  });
+
+  it('shows the gifts in the merchant’s order, with a sold-out one disabled', async () => {
+    settings = giftSettings();
+    const { container } = renderForm(makeProduct({ id: TINT, is_hidden_quantity: true } as Partial<Product>));
+    await waitFor(() => expect(container.querySelectorAll('.gift-card:not(.is-loading)')).toHaveLength(3));
+    const cards = [...container.querySelectorAll<HTMLButtonElement>('.gift-card')];
+    expect(cards.map((c) => c.querySelector('b')?.textContent)).toEqual(['فواحة', 'جهاز تتبع', 'مثبت جوال']);
+    expect(cards[2].disabled).toBe(true);
+    expect(container.querySelector('.ol-t')?.textContent).toContain('azel.gift.title');
+  });
+
+  it('blocks adding to cart until a gift is chosen', async () => {
+    settings = giftSettings();
+    const { salla } = installSdk();
+    const { container } = renderForm(makeProduct({ id: TINT, is_hidden_quantity: true } as Partial<Product>));
+    await waitFor(() => expect(container.querySelectorAll('.gift-card:not(.is-loading)')).toHaveLength(3));
+    fireEvent.submit(container.querySelector('form')!);
+    expect(salla.form.onSubmit).not.toHaveBeenCalled();
+    expect(container.querySelector<HTMLElement>('#gift-err')!.hidden).toBe(false);
+    expect(container.querySelector('#gift-err')!.textContent).toBe('azel.gift.error');
+  });
+
+  it('asks for the fragrance’s colour, then adds the package', async () => {
+    settings = giftSettings();
+    const { salla } = installSdk();
+    const { container } = renderForm(makeProduct({ id: TINT, is_hidden_quantity: true } as Partial<Product>));
+    await waitFor(() => expect(container.querySelectorAll('.gift-card:not(.is-loading)')).toHaveLength(3));
+    fireEvent.click(container.querySelectorAll('.gift-card')[0]);
+    await waitFor(() => expect(container.querySelectorAll('.gift-val')).toHaveLength(2));
+    fireEvent.submit(container.querySelector('form')!);
+    expect(salla.form.onSubmit).not.toHaveBeenCalled();
+    expect(container.querySelector('#gift-err')!.textContent).toBe('azel.gift.option_error');
+
+    fireEvent.click(container.querySelectorAll('.gift-val')[1]);
+    expect(container.querySelector<HTMLElement>('#gift-err')!.hidden).toBe(true);
+    fireEvent.submit(container.querySelector('form')!);
+    expect(salla.form.onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds the gift after the package, replacing the gift already in the cart', async () => {
+    settings = giftSettings();
+    const { salla, calls, handlers } = installSdk();
+    const { container } = renderForm(makeProduct({ id: TINT, is_hidden_quantity: true } as Partial<Product>));
+    await waitFor(() => expect(container.querySelectorAll('.gift-card:not(.is-loading)')).toHaveLength(3));
+    fireEvent.click(container.querySelectorAll('.gift-card')[0]);
+    await waitFor(() => expect(container.querySelectorAll('.gift-val')).toHaveLength(2));
+    fireEvent.click(container.querySelectorAll('.gift-val')[1]);
+    fireEvent.submit(container.querySelector('form')!);
+
+    await act(async () => handlers['cart::item.added']({}, TINT));
+    await waitFor(() => expect(calls).toEqual(['submit form', 'delete 51', 'add 1033697530']));
+    expect(salla.cart.addItem).toHaveBeenCalledWith({
+      id: 1033697530,
+      quantity: 1,
+      options: { '1115672946': 855392916 },
+    });
+
+    // the gift's own add comes back through the same event, and changes nothing
+    await act(async () => handlers['cart::item.added']({}, 1033697530));
+    expect(salla.cart.addItem).toHaveBeenCalledTimes(1);
+    expect(salla.cart.submit).not.toHaveBeenCalled();
+  });
+
+  it('goes to checkout only once the gift is in the cart («اشترِ الآن»)', async () => {
+    settings = giftSettings();
+    const { calls, handlers } = installSdk();
+    const { container } = renderForm(makeProduct({ id: TINT, is_hidden_quantity: true } as Partial<Product>));
+    await waitFor(() => expect(container.querySelectorAll('.gift-card:not(.is-loading)')).toHaveLength(3));
+    fireEvent.click(container.querySelectorAll('.gift-card')[1]);
+    fireEvent.click(container.querySelector('#buy-now')!);
+    await act(async () => handlers['cart::item.added']({}, TINT));
+    await waitFor(() => expect(calls).toEqual(['submit form', 'delete 51', 'add 417224696', 'checkout']));
+  });
+
+  it('adds no gift when the picker is optional and none was chosen', async () => {
+    settings = { ...giftSettings(), gift_required: false };
+    const { salla, handlers } = installSdk();
+    const { container } = renderForm(makeProduct({ id: TINT, is_hidden_quantity: true } as Partial<Product>));
+    await waitFor(() => expect(container.querySelectorAll('.gift-card:not(.is-loading)')).toHaveLength(3));
+    fireEvent.submit(container.querySelector('form')!);
+    expect(salla.form.onSubmit).toHaveBeenCalledTimes(1);
+    await act(async () => handlers['cart::item.added']({}, TINT));
+    expect(salla.cart.addItem).not.toHaveBeenCalled();
   });
 });

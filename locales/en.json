@@ -187,5 +187,9 @@
   "azel.product.tab_shipping": "Shipping & returns",
   "azel.product.shipping": "Shipping",
   "azel.product.returns": "Returns",
-  "azel.product.related": "You may also like"
+  "azel.product.related": "You may also like",
+  "azel.gift.title": "Choose your free gift",
+  "azel.gift.error": "Please choose your gift before adding to cart.",
+  "azel.gift.option_error": "Please choose the gift’s :name.",
+  "azel.gift.failed": "The package is in your cart, but the gift could not be added. Contact us and we will add it to your order."
 }
